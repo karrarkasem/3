@@ -65,7 +65,7 @@
         <span class="dash-nav-icon">📊</span> نظرة عامة
       </a>
       <a class="dash-nav-item" data-page="products" onclick="showPage('products', this)">
-        <span class="dash-nav-icon">📦</span> المنتجات
+        <span class="dash-nav-icon" id="navProdIcon">📦</span> <span id="navProdLabel">المنتجات</span>
       </a>
       <a class="dash-nav-item" data-page="orders" onclick="showPage('orders', this)">
         <span class="dash-nav-icon">🛒</span> الطلبات
@@ -111,6 +111,28 @@
 
     <!-- ── OVERVIEW PAGE ── -->
     <div id="page-overview" class="dash-page">
+      
+      <!-- Notification Sound -->
+      <audio id="notifSound" preload="auto" src="https://cdn.freesound.org/previews/415/415764_6142149-lq.mp3"></audio>
+
+      <!-- Store Link Card -->
+      <div class="bbl-card" style="margin-bottom:1.5rem;background:linear-gradient(135deg,rgba(var(--th-rgb,139,92,246),.1),rgba(var(--th-rgb,139,92,246),.02));border-color:var(--th);">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+          <div>
+            <h3 style="font-weight:700;margin-bottom:.5rem;">🔗 رابط متجرك العام</h3>
+            <p style="font-size:.85rem;color:var(--muted);margin-bottom:.8rem;">شارك هذا الرابط مع عملائك للبدء باستقبال الطلبات</p>
+            <div style="display:flex;gap:.5rem;">
+              <input type="text" id="storeLinkInput" readonly style="background:var(--bg);border:1px solid var(--border);padding:.5rem;border-radius:.5rem;width:280px;font-size:.85rem;color:var(--accent);" />
+              <button onclick="copyLink()" class="bbl-btn-primary" style="padding:.5rem 1rem;font-size:.85rem;border-radius:.5rem;">نسخ</button>
+            </div>
+          </div>
+          <div style="text-align:center;">
+            <img id="storeQr" src="" style="width:100px;height:100px;border-radius:.5rem;background:#fff;padding:5px;" />
+            <div style="font-size:.7rem;color:var(--muted);margin-top:5px;">QR Code للمتجر</div>
+          </div>
+        </div>
+      </div>
+
       <div class="kpi-row" id="kpiRow">
         <div class="kpi-card">
           <div class="kpi-label">إجمالي الطلبات</div>
@@ -144,8 +166,8 @@
     <!-- ── PRODUCTS PAGE ── -->
     <div id="page-products" class="dash-page" style="display:none;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
-        <h2 style="font-size:1.1rem;font-weight:700;">المنتجات</h2>
-        <button class="bbl-btn-primary" style="padding:.55rem 1.2rem;border-radius:.6rem;font-size:.88rem;" onclick="openAddProduct()">+ إضافة منتج</button>
+        <h2 style="font-size:1.1rem;font-weight:700;" id="pageProdTitle">المنتجات</h2>
+        <button class="bbl-btn-primary" style="padding:.55rem 1.2rem;border-radius:.6rem;font-size:.88rem;" onclick="openAddProduct()" id="btnAddProd">+ إضافة منتج</button>
       </div>
       <div class="bbl-card">
         <div id="productsList">
@@ -261,7 +283,7 @@
 
 <!-- Product modal -->
 <div id="productModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(94vw,560px);background:#1a1730;border:1px solid var(--border);border-radius:1.25rem;padding:2rem;z-index:400;max-height:90vh;overflow-y:auto;">
-  <h3 style="font-weight:700;margin-bottom:1.5rem;">إضافة منتج جديد</h3>
+  <h3 style="font-weight:700;margin-bottom:1.5rem;" id="modalProdTitle">إضافة منتج جديد</h3>
   <div class="bbl-form-grid">
     <div class="bbl-field">
       <label>اسم المنتج <span style="color:#f87171">*</span></label>
@@ -283,6 +305,10 @@
       <label>رابط الصورة</label>
       <input type="url" id="prodImg" placeholder="https://..." />
     </div>
+    
+    <!-- Dynamic fields for specialization -->
+    <div id="dynamicProdFields" style="grid-column:1/-1;display:contents;"></div>
+
   </div>
   <div style="display:flex;gap:1rem;margin-top:1.5rem;">
     <button class="bbl-btn-ghost" style="flex:1;padding:.7rem;border-radius:.6rem;" onclick="closeModal()">إلغاء</button>
@@ -316,14 +342,36 @@
   let tenantId   = sess.tenantId;
   let tenantData = null;
 
+  // ── Business Logic Configuration ──
+  const bizConfigs = {
+    restaurant: {
+      prodLabel: 'قائمة الطعام', prodIcon: '🍽️',
+      customFields: [
+        { id: 'ingredients', label: 'المكونات', type: 'text' },
+        { id: 'calories', label: 'السعرات الحرارية', type: 'number' },
+        { id: 'isSpicy', label: 'هل هو حار؟ (نعم/لا)', type: 'text' }
+      ]
+    },
+    clothing: {
+      prodLabel: 'الموديلات', prodIcon: '👗',
+      customFields: [
+        { id: 'sizes', label: 'المقاسات المتوفرة (S, M, L)', type: 'text' },
+        { id: 'colors', label: 'الألوان', type: 'text' },
+        { id: 'material', label: 'نوع القماش', type: 'text' }
+      ]
+    },
+    pharmacy: { prodLabel: 'الأدوية', prodIcon: '💊', customFields: [{ id: 'dosage', label: 'الجرعة (ملغم)', type: 'text' }] },
+    default:  { prodLabel: 'المنتجات', prodIcon: '📦', customFields: [] }
+  };
+
   // UI init
   document.getElementById('adminName').textContent = sess.username || '';
 
   // ── Load tenant data ──
   async function loadTenant() {
     await window.waitForFb();
-    const db = window._db;
-    const { doc, getDoc } = window._fb;
+    const db = window._db; // Firestore instance
+    const { doc, getDoc, onSnapshot, query, collection, where } = window._fb;
 
     const snap = await getDoc(doc(db, 'tenants', tenantId));
     if (!snap.exists()) { window.clearSession(); location.replace('login.html'); return; }
@@ -333,6 +381,9 @@
     if (tenantData.logoUrl) {
       document.getElementById('brandLogo').innerHTML = `<img src="${tenantData.logoUrl}" style="width:36px;height:36px;border-radius:.5rem;object-fit:cover;">`;
     }
+
+    // Apply Business Logic Theme
+    applyBizContext(tenantData.businessType);
 
     // Subscription
     const subSnap = await getDoc(doc(db, 'subscriptions', tenantId));
@@ -366,6 +417,56 @@
 
     loadKPIs();
     loadRecentOrders();
+
+    // Set Store Link & QR
+    // استخدام new URL لضمان صحة الرابط حتى لو كان الموقع داخل مجلد فرعي في GitHub
+    const storeUrl = new URL(`store.html?id=${tenantId}`, window.location.href).href;
+    document.getElementById('storeLinkInput').value = storeUrl;
+    // Use Google Charts API for simple QR generation
+    document.getElementById('storeQr').src = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodeURIComponent(storeUrl)}&choe=UTF-8`;
+
+    // ── Real-time order listener ──
+    const ordersQuery = query(
+      collection(db, `tenants/${tenantId}/orders`),
+      where('createdAt', '>', new Date()) // Listen only for orders created after the page loads
+    );
+
+    onSnapshot(ordersQuery, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          const newOrder = change.doc.data();
+          
+          // Play sound and show toast notification
+          document.getElementById('notifSound').play().catch(e => console.warn("Audio play failed, user interaction might be required."));
+          toast(`🎉 طلب جديد من ${newOrder.customerName || 'عميل'} بقيمة $${Number(newOrder.total).toFixed(2)}`, 'success');
+
+          // Refresh data on the page to reflect the new order
+          loadKPIs();
+          loadRecentOrders();
+        }
+      });
+    }, (error) => {
+      console.error("Real-time listener error:", error);
+    });
+  }
+
+  // ── Apply Business Context ──
+  function applyBizContext(type) {
+    const cfg = bizConfigs[type] || bizConfigs.default;
+    
+    // Update Sidebar & Titles
+    document.getElementById('navProdLabel').textContent = cfg.prodLabel;
+    document.getElementById('navProdIcon').textContent  = cfg.prodIcon;
+    document.getElementById('pageProdTitle').textContent = cfg.prodLabel;
+    document.getElementById('btnAddProd').textContent = '+ إضافة ' + cfg.prodLabel.slice(0, -1); // remove plural roughly
+    document.getElementById('modalProdTitle').textContent = 'إضافة ' + cfg.prodLabel.slice(0, -1) + ' جديد';
+    document.getElementById('kpiProducts').previousElementSibling.textContent = cfg.prodLabel; // KPI Label
+
+    // Prepare Dynamic Fields for Modal
+    const dynContainer = document.getElementById('dynamicProdFields');
+    dynContainer.innerHTML = cfg.customFields.map(f => 
+      `<div class="bbl-field"><label>${f.label}</label><input type="${f.type}" id="dyn_${f.id}" class="dyn-field" data-key="${f.id}"></div>`
+    ).join('');
   }
 
   // ── KPIs ──
@@ -441,9 +542,12 @@
 
     const rows = snap.docs.map(d => {
       const p = d.data();
+      // Optional: Show custom data in table if needed
+      const extrainfo = p.customData && p.customData.sizes ? `<br><span style="font-size:0.7rem;color:var(--muted)">${p.customData.sizes}</span>` : '';
+      
       return `<tr>
         <td>${p.img ? `<img src="${p.img}" style="width:40px;height:40px;border-radius:.4rem;object-fit:cover;">` : '📦'}</td>
-        <td>${p.name || '—'}</td>
+        <td>${p.name || '—'}${extrainfo}</td>
         <td>$${Number(p.price||0).toFixed(2)}</td>
         <td>${p.stock ?? '—'}</td>
         <td><span class="badge ${(p.stock>0)?'badge-green':'badge-red'}">${(p.stock>0)?'متوفر':'نفد'}</span></td>
@@ -518,6 +622,12 @@
     const price = document.getElementById('prodPrice').value;
     if (!name || !price) { toast('يرجى ملء الاسم والسعر', 'error'); return; }
 
+    // Harvest dynamic fields
+    const customData = {};
+    document.querySelectorAll('.dyn-field').forEach(el => {
+      if(el.value) customData[el.dataset.key] = el.value.trim();
+    });
+
     const db = window._db;
     const { collection, addDoc, serverTimestamp } = window._fb;
     await addDoc(collection(db, `tenants/${tenantId}/products`), {
@@ -525,6 +635,7 @@
       description: document.getElementById('prodDesc').value.trim(),
       stock: +document.getElementById('prodStock').value || 0,
       img:   document.getElementById('prodImg').value.trim(),
+      customData: customData, // Save specific data (sizes, calories, etc.)
       createdAt: serverTimestamp()
     });
 
@@ -584,6 +695,13 @@
 
     // Close sidebar on mobile
     document.getElementById('sidebar').classList.remove('open');
+  };
+
+  window.copyLink = function() {
+    const copyText = document.getElementById("storeLinkInput");
+    copyText.select();
+    navigator.clipboard.writeText(copyText.value);
+    toast('تم نسخ الرابط!', 'success');
   };
 
   // ── Modals ──
