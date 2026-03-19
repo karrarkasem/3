@@ -181,6 +181,10 @@
           <label>العنوان</label>
           <input type="text" id="address" placeholder="المدينة، الحي، الشارع" />
         </div>
+        
+        <!-- Dynamic fields container based on specialization -->
+        <div id="customFieldsCtx" style="grid-column:1/-1;display:contents;"></div>
+
       </div>
       <div class="wiz-nav">
         <button class="btn-back" onclick="prevStep(2)">→ السابق</button>
@@ -435,6 +439,23 @@
   // Navigation
   window.nextStep = function(from) {
     if (!validateStep(from)) return;
+    
+    // Inject custom fields when moving from Step 1 to 2
+    if (from === 1) {
+      const ctx = document.getElementById('customFieldsCtx');
+      ctx.innerHTML = ''; // clear
+      
+      if (selBiz === 'restaurant') {
+        ctx.innerHTML = `
+          <div class="bbl-field"><label>نوع المطبخ (شرقي، غربي...)</label><input type="text" id="cust_cuisine" class="cust-field"></div>
+          <div class="bbl-field"><label>عدد الطاولات المتاح</label><input type="number" id="cust_tables" class="cust-field"></div>`;
+      } else if (selBiz === 'pharmacy') {
+        ctx.innerHTML = `<div class="bbl-field" style="grid-column:1/-1"><label>رقم ترخيص النقابة</label><input type="text" id="cust_license" class="cust-field"></div>`;
+      } else if (selBiz === 'clothing') {
+        ctx.innerHTML = `<div class="bbl-field"><label>الفئة (رجالي، نسائي، أطفال)</label><input type="text" id="cust_category" class="cust-field"></div>`;
+      }
+    }
+
     if (from < TOTAL) {
       setStep(from + 1);
     }
@@ -513,6 +534,12 @@
       if (notifActive.tg) notifData.telegram = { enabled: true, token: document.getElementById('tgToken').value.trim(), chatId: document.getElementById('tgChatId').value.trim() };
       if (notifActive.em) notifData.email    = { enabled: true, address: document.getElementById('emEmail').value.trim() };
 
+      // Harvest custom fields
+      const customData = {};
+      document.querySelectorAll('.cust-field').forEach(el => {
+        if(el.value) customData[el.id.replace('cust_','')] = el.value.trim();
+      });
+
       // 3. حساب تاريخ انتهاء التجربة
       const trialEnd = new Date();
       trialEnd.setDate(trialEnd.getDate() + 60);
@@ -526,6 +553,7 @@
         email:         email,
         address:       document.getElementById('address').value.trim(),
         logoUrl:       document.getElementById('logoUrl').value.trim(),
+        customData:    customData,
         theme:         { color: selTheme, mode: selMode },
         notifications: notifData,
         admin:         { username: adminUser || email.split('@')[0] },
