@@ -12,15 +12,17 @@ service cloud.firestore {
     // ── بيانات المستأجر الرئيسية ──
     match /tenants/{tenantId} {
 
-      // قراءة وكتابة للمستأجر صاحب الحساب فقط
-      allow read:   if request.auth != null && request.auth.uid == tenantId;
+      // السماح للعامة بقراءة بيانات المتجر لعرض صفحة المتجر (store.html)
+      allow read:   if true;
       allow create: if request.auth != null && request.auth.uid == tenantId;
       allow update: if request.auth != null && request.auth.uid == tenantId;
       allow delete: if false; // لا يُحذف من الكود — فقط من Firebase Console
 
       // ── المنتجات ──
       match /products/{productId} {
-        allow read, write: if request.auth != null && request.auth.uid == tenantId;
+        // السماح للعامة برؤية المنتجات
+        allow read: if true;
+        allow write: if request.auth != null && request.auth.uid == tenantId;
       }
 
       // ── الطلبات ──
