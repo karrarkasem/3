@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>إنشاء موقعك — منصة بابل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/babil.css" />
+  <style>
+    /* Wizard layout */
+    .wiz-wrap   { min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:2rem 1rem 4rem; }
+    .wiz-header { text-align:center; margin-bottom:2rem; }
+    .wiz-header h1 { font-size:1.6rem; font-weight:900; }
+    .wiz-header p  { color:var(--muted); font-size:.88rem; }
+
+    /* Step bar */
+    .step-bar { display:flex; gap:0; margin-bottom:2.5rem; width:100%; max-width:680px; }
+    .step-item { flex:1; text-align:center; position:relative; }
+    .step-item:not(:last-child)::after {
+      content:''; position:absolute; top:18px; left:-50%; width:100%; height:2px;
+      background:var(--border); z-index:0;
+    }
+    .step-item.done::after  { background:var(--accent); }
+    .step-dot {
+      width:36px; height:36px; border-radius:50%;
+      background:var(--surface); border:2px solid var(--border);
+      display:inline-flex; align-items:center; justify-content:center;
+      font-size:.8rem; font-weight:700; position:relative; z-index:1;
+      color:var(--muted); transition:all .3s;
+    }
+    .step-item.active .step-dot { background:var(--accent); border-color:var(--accent); color:#fff; }
+    .step-item.done   .step-dot { background:var(--accent); border-color:var(--accent); color:#fff; }
+    .step-lbl { font-size:.7rem; color:var(--muted); margin-top:.3rem; }
+    .step-item.active .step-lbl { color:var(--accent); font-weight:600; }
+
+    /* Panels */
+    .wiz-card { width:100%; max-width:680px; }
+    .step-panel { display:none; }
+    .step-panel.active { display:block; animation:fadeIn .35s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+    /* Business type grid */
+    .biz-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+    .biz-opt  {
+      background:var(--surface); border:2px solid var(--border); border-radius:1rem;
+      padding:1.25rem .75rem; text-align:center; cursor:pointer; transition:all .2s;
+    }
+    .biz-opt:hover      { border-color:rgba(139,92,246,.4); }
+    .biz-opt.selected   { border-color:var(--accent); background:rgba(139,92,246,.1); }
+    .biz-opt .biz-icon  { font-size:1.8rem; margin-bottom:.5rem; }
+    .biz-opt .biz-name  { font-size:.82rem; }
+
+    /* Notif toggles */
+    .notif-row { display:flex; align-items:center; gap:1rem; background:var(--surface); border:1px solid var(--border); border-radius:.75rem; padding:1rem 1.25rem; margin-bottom:.75rem; }
+    .notif-icon { font-size:1.4rem; }
+    .notif-info { flex:1; }
+    .notif-info h4 { font-size:.9rem; font-weight:700; }
+    .notif-info p  { font-size:.78rem; color:var(--muted); }
+    .toggle-btn { width:46px; height:26px; border-radius:13px; background:var(--border); border:none; cursor:pointer; position:relative; transition:background .25s; flex-shrink:0; }
+    .toggle-btn.on { background:var(--accent); }
+    .toggle-btn::after { content:''; position:absolute; width:20px; height:20px; border-radius:50%; background:#fff; top:3px; right:3px; transition:right .25s; }
+    .toggle-btn.on::after { right:auto; left:3px; }
+    .notif-fields { margin-top:.75rem; padding-right:1rem; border-right:2px solid var(--accent); animation:fadeIn .3s; }
+
+    /* Theme picker */
+    .theme-grid { display:grid; grid-template-columns:repeat(8,1fr); gap:.6rem; margin-bottom:1rem; }
+    .theme-swatch {
+      width:100%; aspect-ratio:1; border-radius:.6rem; cursor:pointer;
+      border:3px solid transparent; transition:transform .2s, border-color .2s;
+    }
+    .theme-swatch:hover   { transform:scale(1.12); }
+    .theme-swatch.selected { border-color:#fff; transform:scale(1.08); }
+    .mode-btns { display:flex; gap:.75rem; }
+    .mode-btn  {
+      flex:1; padding:.65rem; border-radius:.7rem; border:2px solid var(--border);
+      background:var(--surface); color:var(--fg); cursor:pointer; font-family:inherit; font-size:.88rem; font-weight:600; transition:all .2s;
+    }
+    .mode-btn.selected { border-color:var(--accent); background:rgba(139,92,246,.12); color:var(--accent); }
+
+    /* Plan cards */
+    .plan-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:1rem; margin-bottom:1rem; }
+    .plan-opt  {
+      border:2px solid var(--border); border-radius:1rem; padding:1.25rem 1rem; text-align:center;
+      cursor:pointer; transition:all .2s; background:var(--surface);
+    }
+    .plan-opt:hover    { border-color:rgba(139,92,246,.4); }
+    .plan-opt.selected { border-color:var(--accent); background:rgba(139,92,246,.1); }
+    .plan-opt .p-name  { font-size:.88rem; font-weight:700; margin-bottom:.25rem; }
+    .plan-opt .p-price { font-size:1.3rem; font-weight:900; color:var(--accent); }
+    .plan-opt .p-sub   { font-size:.72rem; color:var(--muted); }
+
+    /* Nav buttons */
+    .wiz-nav { display:flex; justify-content:space-between; gap:1rem; margin-top:1.5rem; }
+    .wiz-nav button { flex:1; padding:.75rem; border-radius:.7rem; font-family:inherit; font-size:.95rem; font-weight:700; cursor:pointer; transition:all .2s; border:none; }
+    .btn-back { background:var(--surface); border:1px solid var(--border); color:var(--fg); }
+    .btn-next { background:var(--accent); color:#fff; }
+    .btn-next:hover { background:var(--accent2); }
+    .btn-back:hover { border-color:var(--accent); }
+
+    /* Done screen */
+    .done-screen { text-align:center; padding:3rem 1rem; }
+    .done-screen .done-icon { font-size:4rem; margin-bottom:1rem; animation:pop .5s ease; }
+    @keyframes pop { from{transform:scale(0)} to{transform:scale(1)} }
+    .done-screen h2 { font-size:1.8rem; font-weight:900; margin-bottom:.75rem; }
+    .done-screen p  { color:var(--muted); max-width:420px; margin:0 auto 2rem; line-height:1.6; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="bbl-nav">
+  <div class="bbl-nav-inner">
+    <a href="index.html" class="bbl-logo">🏛️ بابل</a>
+    <div class="bbl-nav-links">
+      <span style="font-size:.85rem;color:var(--muted);">لديك حساب؟</span>
+      <a href="login.html" class="bbl-btn-ghost" style="padding:.45rem 1.1rem;border-radius:.6rem;font-size:.9rem;">تسجيل الدخول</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wiz-wrap">
+  <div class="wiz-header">
+    <h1>🏛️ أنشئ موقعك الآن</h1>
+    <p>خطوات بسيطة وموقعك جاهز في دقائق</p>
+  </div>
+
+  <!-- Step bar -->
+  <div class="step-bar" id="stepBar">
+    <div class="step-item active" data-step="1"><div class="step-dot">1</div><div class="step-lbl">النشاط</div></div>
+    <div class="step-item"        data-step="2"><div class="step-dot">2</div><div class="step-lbl">المعلومات</div></div>
+    <div class="step-item"        data-step="3"><div class="step-dot">3</div><div class="step-lbl">الهوية</div></div>
+    <div class="step-item"        data-step="4"><div class="step-dot">4</div><div class="step-lbl">الاشتراك</div></div>
+    <div class="step-item"        data-step="5"><div class="step-dot">5</div><div class="step-lbl">الإشعارات</div></div>
+    <div class="step-item"        data-step="6"><div class="step-dot">6</div><div class="step-lbl">الحساب</div></div>
+  </div>
+
+  <!-- Card -->
+  <div class="wiz-card bbl-card">
+
+    <!-- STEP 1: Business type -->
+    <div class="step-panel active" id="panel1">
+      <h3 style="margin-bottom:1.25rem;">ما هو نشاطك التجاري؟</h3>
+      <div class="biz-grid" id="bizGrid">
+        <div class="biz-opt" data-biz="store">    <div class="biz-icon">🛒</div><div class="biz-name">متجر إلكتروني</div></div>
+        <div class="biz-opt" data-biz="restaurant"><div class="biz-icon">🍽️</div><div class="biz-name">مطعم / كافيه</div></div>
+        <div class="biz-opt" data-biz="clothing">  <div class="biz-icon">👗</div><div class="biz-name">محل ملابس</div></div>
+        <div class="biz-opt" data-biz="pharmacy">  <div class="biz-icon">💊</div><div class="biz-name">صيدلية</div></div>
+        <div class="biz-opt" data-biz="company">   <div class="biz-icon">🏢</div><div class="biz-name">شركة</div></div>
+        <div class="biz-opt" data-biz="warehouse">  <div class="biz-icon">🏭</div><div class="biz-name">مستودع</div></div>
+        <div class="biz-opt" data-biz="services">  <div class="biz-icon">🔧</div><div class="biz-name">خدمات</div></div>
+        <div class="biz-opt" data-biz="other">     <div class="biz-icon">✨</div><div class="biz-name">أخرى</div></div>
+      </div>
+      <div class="wiz-nav">
+        <div></div>
+        <button class="btn-next" onclick="nextStep(1)">التالي ←</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Company info -->
+    <div class="step-panel" id="panel2">
+      <h3 style="margin-bottom:1.25rem;">معلومات شركتك</h3>
+      <div class="bbl-form-grid">
+        <div class="bbl-field">
+          <label>اسم الشركة (عربي) <span style="color:#f87171">*</span></label>
+          <input type="text" id="nameAr" placeholder="مثال: متجر الأفق" />
+        </div>
+        <div class="bbl-field">
+          <label>اسم الشركة (إنجليزي)</label>
+          <input type="text" id="nameEn" placeholder="Horizon Store" />
+        </div>
+        <div class="bbl-field">
+          <label>رقم الهاتف <span style="color:#f87171">*</span></label>
+          <input type="tel" id="phone" placeholder="+9647XXXXXXXXX" />
+        </div>
+        <div class="bbl-field">
+          <label>البريد الإلكتروني</label>
+          <input type="email" id="email" placeholder="info@example.com" />
+        </div>
+        <div class="bbl-field" style="grid-column:1/-1">
+          <label>العنوان</label>
+          <input type="text" id="address" placeholder="المدينة، الحي، الشارع" />
+        </div>
+      </div>
+      <div class="wiz-nav">
+        <button class="btn-back" onclick="prevStep(2)">→ السابق</button>
+        <button class="btn-next" onclick="nextStep(2)">التالي ←</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Visual identity -->
+    <div class="step-panel" id="panel3">
+      <h3 style="margin-bottom:1.25rem;">الهوية البصرية</h3>
+
+      <div class="bbl-field">
+        <label>اختر لون الثيم</label>
+        <div class="theme-grid" id="themeGrid">
+          <div class="theme-swatch selected" data-theme="violet" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed)" title="بنفسجي"></div>
+          <div class="theme-swatch" data-theme="teal"   style="background:linear-gradient(135deg,#14b8a6,#0d9488)" title="فيروزي"></div>
+          <div class="theme-swatch" data-theme="sky"    style="background:linear-gradient(135deg,#0ea5e9,#0284c7)" title="سماوي"></div>
+          <div class="theme-swatch" data-theme="indigo" style="background:linear-gradient(135deg,#6366f1,#4f46e5)" title="نيلي"></div>
+          <div class="theme-swatch" data-theme="rose"   style="background:linear-gradient(135deg,#f43f5e,#e11d48)" title="وردي"></div>
+          <div class="theme-swatch" data-theme="orange" style="background:linear-gradient(135deg,#f97316,#ea580c)" title="برتقالي"></div>
+          <div class="theme-swatch" data-theme="gold"   style="background:linear-gradient(135deg,#eab308,#ca8a04)" title="ذهبي"></div>
+          <div class="theme-swatch" data-theme="mint"   style="background:linear-gradient(135deg,#10b981,#059669)" title="نعناعي"></div>
+        </div>
+      </div>
+
+      <div class="bbl-field">
+        <label>الوضع</label>
+        <div class="mode-btns" id="modeBtns">
+          <button class="mode-btn selected" data-mode="light">☀️ فاتح</button>
+          <button class="mode-btn"          data-mode="dark">🌙 داكن</button>
+        </div>
+      </div>
+
+      <div class="bbl-field">
+        <label>رابط الشعار (صورة)</label>
+        <input type="url" id="logoUrl" placeholder="https://example.com/logo.png" />
+        <small style="color:var(--muted);font-size:.78rem;">اختياري — يمكنك إضافته لاحقاً من لوحة التحكم</small>
+      </div>
+
+      <div class="wiz-nav">
+        <button class="btn-back" onclick="prevStep(3)">→ السابق</button>
+        <button class="btn-next" onclick="nextStep(3)">التالي ←</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: Subscription plan -->
+    <div class="step-panel" id="panel4">
+      <h3 style="margin-bottom:1.25rem;">اختر خطة الاشتراك</h3>
+      <div class="plan-grid" id="planGrid">
+        <div class="plan-opt selected" data-plan="trial">
+          <div class="p-name">🎁 تجريبي</div>
+          <div class="p-price">مجاني</div>
+          <div class="p-sub">شهرين كاملين</div>
+        </div>
+        <div class="plan-opt" data-plan="basic">
+          <div class="p-name">⚡ أساسي</div>
+          <div class="p-price">$15</div>
+          <div class="p-sub">شهرياً</div>
+        </div>
+        <div class="plan-opt" data-plan="pro">
+          <div class="p-name">🚀 احترافي</div>
+          <div class="p-price">$35</div>
+          <div class="p-sub">شهرياً</div>
+        </div>
+      </div>
+      <div id="planDesc" style="background:var(--surface);border:1px solid var(--border);border-radius:.75rem;padding:1rem 1.25rem;font-size:.85rem;color:var(--muted);line-height:1.7;"></div>
+      <div class="wiz-nav">
+        <button class="btn-back" onclick="prevStep(4)">→ السابق</button>
+        <button class="btn-next" onclick="nextStep(4)">التالي ←</button>
+      </div>
+    </div>
+
+    <!-- STEP 5: Notifications -->
+    <div class="step-panel" id="panel5">
+      <h3 style="margin-bottom:1.25rem;">قنوات استقبال الطلبات</h3>
+      <p style="color:var(--muted);font-size:.85rem;margin-bottom:1.25rem;">اختر كيف تريد أن تستقبل إشعارات الطلبات الجديدة</p>
+
+      <!-- WhatsApp -->
+      <div class="notif-row">
+        <div class="notif-icon">💬</div>
+        <div class="notif-info">
+          <h4>واتساب</h4>
+          <p>استقبل إشعار فوري لكل طلب جديد</p>
+        </div>
+        <button class="toggle-btn" id="togWA" onclick="toggleNotif('wa')"></button>
+      </div>
+      <div id="fieldsWA" style="display:none;" class="notif-fields">
+        <div class="bbl-field"><label>رقم واتساب (مع رمز الدولة)</label><input type="tel" id="waNumber" placeholder="+9647XXXXXXXXX" /></div>
+      </div>
+
+      <!-- Telegram -->
+      <div class="notif-row">
+        <div class="notif-icon">✈️</div>
+        <div class="notif-info">
+          <h4>تيليجرام</h4>
+          <p>إشعارات عبر بوت تيليجرام مخصص</p>
+        </div>
+        <button class="toggle-btn" id="togTG" onclick="toggleNotif('tg')"></button>
+      </div>
+      <div id="fieldsTG" style="display:none;" class="notif-fields">
+        <div class="bbl-form-grid">
+          <div class="bbl-field"><label>Token البوت</label><input type="text" id="tgToken" placeholder="123456789:ABC..." /></div>
+          <div class="bbl-field"><label>Chat ID</label><input type="text" id="tgChatId" placeholder="-100XXXXXXXXXX" /></div>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="notif-row">
+        <div class="notif-icon">📧</div>
+        <div class="notif-info">
+          <h4>البريد الإلكتروني</h4>
+          <p>إشعار بريدي لكل طلب جديد</p>
+        </div>
+        <button class="toggle-btn" id="togEM" onclick="toggleNotif('em')"></button>
+      </div>
+      <div id="fieldsEM" style="display:none;" class="notif-fields">
+        <div class="bbl-field"><label>البريد الإلكتروني</label><input type="email" id="emEmail" placeholder="orders@example.com" /></div>
+      </div>
+
+      <div class="wiz-nav">
+        <button class="btn-back" onclick="prevStep(5)">→ السابق</button>
+        <button class="btn-next" onclick="nextStep(5)">التالي ←</button>
+      </div>
+    </div>
+
+    <!-- STEP 6: Admin account -->
+    <div class="step-panel" id="panel6">
+      <h3 style="margin-bottom:1.25rem;">حساب المدير</h3>
+      <p style="color:var(--muted);font-size:.85rem;margin-bottom:1.25rem;">ستستخدم هذه البيانات لتسجيل الدخول لاحقاً</p>
+
+      <!-- Email display (from step 2) -->
+      <div class="bbl-field">
+        <label>البريد الإلكتروني (من خطوة المعلومات)</label>
+        <div id="adminEmailDisplay" style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.25);border-radius:.6rem;padding:.75rem 1rem;font-size:.9rem;color:var(--accent);font-weight:600;">—</div>
+        <small style="color:var(--muted);font-size:.78rem;">هذا هو بريدك للدخول — يمكن تغييره في الخطوة الثانية</small>
+      </div>
+
+      <div class="bbl-form-grid">
+        <div class="bbl-field">
+          <label>اسم المستخدم للعرض</label>
+          <input type="text" id="adminUser" placeholder="admin" autocomplete="off" />
+          <small style="color:var(--muted);font-size:.78rem;">اختياري — يظهر في لوحة التحكم</small>
+        </div>
+        <div class="bbl-field">
+          <label>كلمة المرور <span style="color:#f87171">*</span></label>
+          <input type="password" id="adminPass" placeholder="8 أحرف على الأقل" autocomplete="new-password" />
+        </div>
+        <div class="bbl-field" style="grid-column:1/-1">
+          <label>تأكيد كلمة المرور <span style="color:#f87171">*</span></label>
+          <input type="password" id="adminPass2" placeholder="أعد كتابة كلمة المرور" autocomplete="new-password" />
+        </div>
+      </div>
+
+      <div id="regError" style="display:none;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.35);border-radius:.6rem;padding:.75rem 1rem;font-size:.85rem;color:#f87171;margin-top:1rem;"></div>
+
+      <div class="wiz-nav">
+        <button class="btn-back" onclick="prevStep(6)">→ السابق</button>
+        <button class="btn-next" id="createBtn" onclick="createSite()">🚀 إنشاء الموقع</button>
+      </div>
+    </div>
+
+    <!-- Done screen -->
+    <div class="step-panel" id="panelDone">
+      <div class="done-screen">
+        <div class="done-icon">🎉</div>
+        <h2>تم إنشاء موقعك بنجاح!</h2>
+        <p>موقعك جاهز الآن. سيتم تحويلك إلى لوحة التحكم خلال ثوانٍ...</p>
+        <div id="doneMsg" style="margin-bottom:2rem;font-size:.85rem;color:var(--accent);font-weight:600;"></div>
+        <a id="dashLink" href="dashboard.html" class="bbl-btn-primary" style="padding:.8rem 2rem;border-radius:.7rem;font-size:1rem;display:inline-block;">الذهاب للوحة التحكم</a>
+      </div>
+    </div>
+
+  </div><!-- /.wiz-card -->
+</div><!-- /.wiz-wrap -->
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script type="module">
+  import './js/firebase.js';
+  import './js/auth.js';
+
+  const TOTAL = 6;
+  let currentStep = 1;
+  let selBiz   = '';
+  let selTheme = 'violet';
+  let selMode  = 'light';
+  let selPlan  = 'trial';
+  const notifActive = { wa: false, tg: false, em: false };
+
+  // Pre-select plan from URL
+  const urlPlan = new URLSearchParams(location.search).get('plan');
+  if (['trial','basic','pro'].includes(urlPlan)) {
+    selPlan = urlPlan;
+    document.querySelectorAll('.plan-opt').forEach(el => {
+      el.classList.toggle('selected', el.dataset.plan === selPlan);
+    });
+  }
+
+  // Business type
+  document.getElementById('bizGrid').addEventListener('click', e => {
+    const opt = e.target.closest('.biz-opt');
+    if (!opt) return;
+    document.querySelectorAll('.biz-opt').forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+    selBiz = opt.dataset.biz;
+  });
+
+  // Theme
+  document.getElementById('themeGrid').addEventListener('click', e => {
+    const sw = e.target.closest('.theme-swatch');
+    if (!sw) return;
+    document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('selected'));
+    sw.classList.add('selected');
+    selTheme = sw.dataset.theme;
+  });
+
+  // Mode
+  document.getElementById('modeBtns').addEventListener('click', e => {
+    const btn = e.target.closest('.mode-btn');
+    if (!btn) return;
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selMode = btn.dataset.mode;
+  });
+
+  // Plan
+  const planDescs = {
+    trial: '✅ مجاني لمدة شهرين كاملين — حتى 50 منتج، إشعارات واتساب، لوحة تحكم كاملة، دعم فني.',
+    basic: '⚡ $15 شهرياً — حتى 500 منتج، واتساب + تيليجرام، إدارة السائقين، نقاط المكافآت، تقارير متقدمة.',
+    pro:   '🚀 $35 شهرياً — منتجات غير محدودة، جميع قنوات الإشعار، إدارة مندوبين وفروع، API مخصص، أولوية في الدعم.'
+  };
+  document.getElementById('planGrid').addEventListener('click', e => {
+    const opt = e.target.closest('.plan-opt');
+    if (!opt) return;
+    document.querySelectorAll('.plan-opt').forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+    selPlan = opt.dataset.plan;
+    document.getElementById('planDesc').textContent = planDescs[selPlan];
+  });
+  document.getElementById('planDesc').textContent = planDescs[selPlan];
+
+  // Notif toggles
+  window.toggleNotif = function(key) {
+    notifActive[key] = !notifActive[key];
+    const togMap   = { wa:'togWA', tg:'togTG', em:'togEM' };
+    const fieldMap = { wa:'fieldsWA', tg:'fieldsTG', em:'fieldsEM' };
+    const btn = document.getElementById(togMap[key]);
+    btn.classList.toggle('on', notifActive[key]);
+    document.getElementById(fieldMap[key]).style.display = notifActive[key] ? 'block' : 'none';
+  };
+
+  // Navigation
+  window.nextStep = function(from) {
+    if (!validateStep(from)) return;
+    if (from < TOTAL) {
+      setStep(from + 1);
+    }
+  };
+  window.prevStep = function(from) {
+    if (from > 1) setStep(from - 1);
+  };
+
+  function setStep(n) {
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    document.querySelector(`#panel${n}`) && document.querySelector(`#panel${n}`).classList.add('active');
+    document.querySelectorAll('.step-item').forEach(item => {
+      const s = +item.dataset.step;
+      item.classList.toggle('active', s === n);
+      item.classList.toggle('done',   s < n);
+    });
+    currentStep = n;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function validateStep(n) {
+    if (n === 1) {
+      if (!selBiz) { toast('يرجى اختيار نوع النشاط التجاري', 'error'); return false; }
+    }
+    if (n === 2) {
+      const nameAr = document.getElementById('nameAr').value.trim();
+      const phone  = document.getElementById('phone').value.trim();
+      const email  = document.getElementById('email').value.trim();
+      if (!nameAr)  { toast('يرجى إدخال اسم الشركة بالعربي', 'error'); return false; }
+      if (!phone)   { toast('يرجى إدخال رقم الهاتف', 'error'); return false; }
+      if (!email)   { toast('يرجى إدخال البريد الإلكتروني — سيُستخدم لتسجيل الدخول', 'error'); return false; }
+    }
+    // عند الانتقال للخطوة 6: عرض الإيميل المدخل في الخطوة 2
+    if (n === 5) {
+      const email = document.getElementById('email').value.trim();
+      document.getElementById('adminEmailDisplay').textContent = email || '(لم يُدخل بريد)';
+    }
+    return true;
+  }
+
+  // Create site — using Firebase Authentication
+  window.createSite = async function() {
+    const adminPass  = document.getElementById('adminPass').value;
+    const adminPass2 = document.getElementById('adminPass2').value;
+    const adminUser  = document.getElementById('adminUser').value.trim();
+    const email      = document.getElementById('email').value.trim();
+    const errEl      = document.getElementById('regError');
+    errEl.style.display = 'none';
+
+    const showErr = msg => { errEl.textContent = msg; errEl.style.display = 'block'; };
+
+    if (!email)                  { showErr('يرجى العودة للخطوة الثانية وإدخال البريد الإلكتروني'); return; }
+    if (adminPass.length < 8)    { showErr('كلمة المرور يجب أن تكون 8 أحرف على الأقل'); return; }
+    if (adminPass !== adminPass2) { showErr('كلمة المرور وتأكيدها غير متطابقتين'); return; }
+
+    const btn = document.getElementById('createBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ جاري الإنشاء...';
+
+    let firebaseUser = null;
+
+    try {
+      await window.waitForFb();
+
+      // 1. إنشاء حساب Firebase Authentication
+      const cred = await window.registerWithEmail(email, adminPass);
+      firebaseUser = cred.user;
+      const uid = firebaseUser.uid;
+
+      const db = window._db;
+      const { setDoc, doc, serverTimestamp, Timestamp } = window._fb;
+
+      // 2. بناء بيانات الإشعارات
+      const notifData = {};
+      if (notifActive.wa) notifData.whatsapp = { enabled: true, number: document.getElementById('waNumber').value.trim() };
+      if (notifActive.tg) notifData.telegram = { enabled: true, token: document.getElementById('tgToken').value.trim(), chatId: document.getElementById('tgChatId').value.trim() };
+      if (notifActive.em) notifData.email    = { enabled: true, address: document.getElementById('emEmail').value.trim() };
+
+      // 3. حساب تاريخ انتهاء التجربة
+      const trialEnd = new Date();
+      trialEnd.setDate(trialEnd.getDate() + 60);
+
+      // 4. حفظ بيانات المستأجر في Firestore (tenantId = uid)
+      const tenantData = {
+        businessType:  selBiz,
+        nameAr:        document.getElementById('nameAr').value.trim(),
+        nameEn:        document.getElementById('nameEn').value.trim(),
+        phone:         document.getElementById('phone').value.trim(),
+        email:         email,
+        address:       document.getElementById('address').value.trim(),
+        logoUrl:       document.getElementById('logoUrl').value.trim(),
+        theme:         { color: selTheme, mode: selMode },
+        notifications: notifData,
+        admin:         { username: adminUser || email.split('@')[0] },
+        createdAt:     serverTimestamp(),
+        status:        'active'
+      };
+
+      await setDoc(doc(db, 'tenants', uid), tenantData);
+
+      // 5. حفظ الاشتراك
+      await setDoc(doc(db, 'subscriptions', uid), {
+        tenantId:  uid,
+        plan:      selPlan,
+        status:    'active',
+        trialEnd:  selPlan === 'trial' ? Timestamp.fromDate(trialEnd) : null,
+        startedAt: serverTimestamp()
+      });
+
+      // 6. حفظ الجلسة المحلية
+      window.saveSession(uid, tenantData);
+
+      // 7. شاشة النجاح
+      document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('panelDone').classList.add('active');
+      document.getElementById('stepBar').style.display = 'none';
+      if (selPlan === 'trial') {
+        document.getElementById('doneMsg').textContent = `تجربتك المجانية تنتهي في ${trialEnd.toLocaleDateString('ar-IQ')}`;
+      }
+
+      setTimeout(() => location.replace('dashboard.html'), 3000);
+
+    } catch (err) {
+      console.error(err);
+
+      // إذا فشل Firestore بعد إنشاء Firebase Auth — احذف المستخدم لتجنب الحساب المعلق
+      if (firebaseUser && err.code !== 'auth/email-already-in-use') {
+        await firebaseUser.delete().catch(() => {});
+      }
+
+      const code = err.code;
+      if (code === 'auth/email-already-in-use') {
+        showErr('هذا البريد الإلكتروني مسجّل مسبقاً. يرجى تسجيل الدخول أو استخدام بريد آخر.');
+      } else if (code === 'auth/invalid-email') {
+        showErr('صيغة البريد الإلكتروني غير صحيحة.');
+      } else if (code === 'auth/weak-password') {
+        showErr('كلمة المرور ضعيفة. استخدم 8 أحرف أو أكثر تشمل أرقاماً.');
+      } else {
+        showErr('حدث خطأ أثناء الإنشاء: ' + (err.message || err.code));
+      }
+
+      btn.disabled = false;
+      btn.textContent = '🚀 إنشاء الموقع';
+    }
+  };
+
+  // Toast
+  function toast(msg, type = 'info') {
+    const stack = document.getElementById('toastStack');
+    const t = document.createElement('div');
+    t.className = `bbl-toast ${type}`;
+    t.textContent = msg;
+    stack.appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+  }
+</script>
+</body>
+</html>

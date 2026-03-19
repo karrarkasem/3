@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>منصة بابل — ابنِ متجرك الآن</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/babil.css" />
+  <style>
+    /* ── Landing extras ── */
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: rgba(139,92,246,.15);
+      border: 1px solid rgba(139,92,246,.35);
+      border-radius: 2rem;
+      padding: .35rem 1rem;
+      font-size: .82rem;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+    .hero-badge span { font-size: 1rem; }
+
+    .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem; }
+
+    /* How it works */
+    .steps-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+    .step-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      position: relative;
+    }
+    .step-num {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.1rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .step-card h3 { font-size: 1rem; margin-bottom: .5rem; }
+    .step-card p  { font-size: .85rem; color: var(--muted); }
+
+    /* Business types */
+    .biz-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    .biz-tile {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      transition: border-color .25s, transform .2s;
+    }
+    .biz-tile:hover { border-color: var(--accent); transform: translateY(-4px); }
+    .biz-tile .biz-icon { font-size: 2rem; margin-bottom: .5rem; }
+    .biz-tile span { font-size: .85rem; color: var(--muted); }
+
+    /* Features */
+    .feat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2.5rem;
+    }
+    .feat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+    }
+    .feat-icon { font-size: 1.8rem; margin-bottom: .75rem; }
+    .feat-card h3 { font-size: 1rem; margin-bottom: .4rem; }
+    .feat-card p  { font-size: .85rem; color: var(--muted); line-height: 1.6; }
+
+    /* Pricing */
+    .plans-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+    .plan-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      transition: border-color .25s;
+    }
+    .plan-card.featured {
+      border-color: var(--accent);
+      background: rgba(139,92,246,.07);
+      position: relative;
+    }
+    .plan-badge {
+      position: absolute;
+      top: -1px;
+      right: 50%;
+      transform: translateX(50%);
+      background: var(--accent);
+      color: #fff;
+      font-size: .75rem;
+      font-weight: 700;
+      padding: .25rem .9rem;
+      border-radius: 0 0 .75rem .75rem;
+    }
+    .plan-name { font-size: .9rem; color: var(--muted); margin-bottom: .5rem; }
+    .plan-price { font-size: 2.5rem; font-weight: 900; color: var(--fg); }
+    .plan-price sub { font-size: .9rem; font-weight: 400; color: var(--muted); }
+    .plan-desc { font-size: .82rem; color: var(--muted); margin: .5rem 0 1.5rem; }
+    .plan-feats { list-style: none; text-align: right; margin-bottom: 1.5rem; }
+    .plan-feats li { font-size: .85rem; padding: .35rem 0; border-bottom: 1px solid var(--border); }
+    .plan-feats li::before { content: "✓  "; color: var(--accent); font-weight: 700; }
+
+    /* CTA strip */
+    .cta-strip {
+      background: linear-gradient(135deg, rgba(139,92,246,.2), rgba(124,58,237,.1));
+      border: 1px solid rgba(139,92,246,.3);
+      border-radius: 1.5rem;
+      padding: 4rem 2rem;
+      text-align: center;
+      margin: 5rem 0 3rem;
+    }
+    .cta-strip h2 { font-size: 2rem; margin-bottom: 1rem; }
+    .cta-strip p  { color: var(--muted); margin-bottom: 2rem; }
+
+    /* Reveal animation */
+    .reveal { opacity: 0; transform: translateY(30px); transition: opacity .6s ease, transform .6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* Sections */
+    section { padding: 5rem 1rem; max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      font-size: .8rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: .75rem;
+    }
+    .section-title { font-size: 2rem; font-weight: 900; margin-bottom: .75rem; }
+    .section-sub   { color: var(--muted); max-width: 520px; }
+  </style>
+</head>
+<body>
+
+<!-- ── Navbar ── -->
+<nav class="bbl-nav">
+  <div class="bbl-nav-inner">
+    <a href="index.html" class="bbl-logo">🏛️ بابل</a>
+    <div class="bbl-nav-links">
+      <a href="#how">كيف يعمل</a>
+      <a href="#features">المميزات</a>
+      <a href="#pricing">الأسعار</a>
+      <a href="login.html" class="bbl-btn-ghost" style="padding:.45rem 1.1rem;border-radius:.6rem;font-size:.9rem;">تسجيل الدخول</a>
+      <a href="register.html" class="bbl-btn-primary" style="padding:.45rem 1.2rem;border-radius:.6rem;font-size:.9rem;">ابدأ مجاناً</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Hero ── -->
+<div class="bbl-hero">
+  <div class="bbl-hero-inner">
+    <div class="hero-badge"><span>🚀</span> منصة بناء المواقع والمتاجر</div>
+    <h1 class="bbl-hero-title">ابنِ متجرك الإلكتروني<br />في دقائق</h1>
+    <p class="bbl-hero-sub">
+      بابل منصة سحابية تتيح لك إطلاق متجر أو موقع تجاري كامل بدون أي خبرة تقنية —
+      فقط اختر تخصصك واملأ معلوماتك وابدأ البيع فوراً.
+    </p>
+    <div class="hero-btns">
+      <a href="register.html" class="bbl-btn-primary">ابدأ تجربتك المجانية</a>
+      <a href="login.html"    class="bbl-btn-ghost">لدي حساب بالفعل</a>
+    </div>
+    <div style="margin-top:3rem;display:flex;gap:2.5rem;justify-content:center;flex-wrap:wrap;">
+      <div style="text-align:center;">
+        <div style="font-size:1.8rem;font-weight:900;color:var(--accent);">+500</div>
+        <div style="font-size:.8rem;color:var(--muted);">متجر نشط</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:1.8rem;font-weight:900;color:var(--accent);">60 يوم</div>
+        <div style="font-size:.8rem;color:var(--muted);">تجربة مجانية</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:1.8rem;font-weight:900;color:var(--accent);">24/7</div>
+        <div style="font-size:.8rem;color:var(--muted);">دعم فني</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── How it works ── -->
+<section id="how">
+  <div class="reveal">
+    <div class="section-label">كيف يعمل</div>
+    <div class="section-title">أربع خطوات وموقعك جاهز</div>
+    <p class="section-sub">لا تحتاج أي مهارة برمجية. بابل يهتم بكل التقنيات خلف الكواليس.</p>
+  </div>
+  <div class="steps-row reveal">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <h3>اختر تخصصك</h3>
+      <p>متجر، مطعم، عيادة، محل ملابس، أو أي تخصص آخر</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <h3>أدخل معلوماتك</h3>
+      <p>اسم الشركة، الشعار، رقم الهاتف، وبقية التفاصيل</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <h3>اختر خطة الاشتراك</h3>
+      <p>ابدأ مجاناً لمدة شهرين ثم اختر الخطة التي تناسبك</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">4</div>
+      <h3>انشر وابدأ البيع</h3>
+      <p>موقعك جاهز فوراً مع لوحة تحكم كاملة وإشعارات فورية</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── Business types ── -->
+<section>
+  <div class="reveal">
+    <div class="section-label">التخصصات</div>
+    <div class="section-title">لكل نشاط تجاري حل مخصص</div>
+  </div>
+  <div class="biz-grid reveal">
+    <div class="biz-tile"><div class="biz-icon">🛒</div><span>متجر إلكتروني</span></div>
+    <div class="biz-tile"><div class="biz-icon">🍽️</div><span>مطعم وكافيه</span></div>
+    <div class="biz-tile"><div class="biz-icon">👗</div><span>محل ملابس</span></div>
+    <div class="biz-tile"><div class="biz-icon">💊</div><span>صيدلية</span></div>
+    <div class="biz-tile"><div class="biz-icon">🏢</div><span>شركة خدمات</span></div>
+    <div class="biz-tile"><div class="biz-icon">🏭</div><span>مستودع وتوزيع</span></div>
+    <div class="biz-tile"><div class="biz-icon">🔧</div><span>خدمات تقنية</span></div>
+    <div class="biz-tile"><div class="biz-icon">✨</div><span>أخرى</span></div>
+  </div>
+</section>
+
+<!-- ── Features ── -->
+<section id="features">
+  <div class="reveal">
+    <div class="section-label">المميزات</div>
+    <div class="section-title">كل ما تحتاجه في مكان واحد</div>
+  </div>
+  <div class="feat-grid reveal">
+    <div class="feat-card">
+      <div class="feat-icon">📦</div>
+      <h3>إدارة المنتجات</h3>
+      <p>أضف منتجاتك بالصور والأسعار وتتبع المخزون بسهولة تامة</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🔔</div>
+      <h3>إشعارات فورية</h3>
+      <p>استقبل طلباتك عبر واتساب أو تيليجرام أو البريد الإلكتروني</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🚚</div>
+      <h3>إدارة التوصيل</h3>
+      <p>تتبع السائقين والطلبات في الوقت الحقيقي مع خريطة مباشرة</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🎨</div>
+      <h3>تصميم مخصص</h3>
+      <p>اختر ألوان موقعك والوضع الفاتح أو الداكن بنقرة واحدة</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📊</div>
+      <h3>تقارير وإحصائيات</h3>
+      <p>راقب مبيعاتك وأداء طلباتك من لوحة تحكم واضحة ومرتبة</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">💳</div>
+      <h3>نقاط المكافآت</h3>
+      <p>نظام نقاط مدمج لمكافأة عملائك وزيادة ولائهم</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">👥</div>
+      <h3>إدارة المندوبين</h3>
+      <p>أضف مندوبين وتابع أداءهم وعمولاتهم بشكل آلي</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🔐</div>
+      <h3>أمان عالي</h3>
+      <p>بياناتك محمية بتشفير من الدرجة الأولى على Firebase</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── Pricing ── -->
+<section id="pricing">
+  <div class="reveal" style="text-align:center;">
+    <div class="section-label">الأسعار</div>
+    <div class="section-title">خطط بسيطة وشفافة</div>
+    <p class="section-sub" style="margin:0 auto;">ابدأ مجاناً، وطوّر اشتراكك متى تريد. لا رسوم خفية.</p>
+  </div>
+  <div class="plans-row reveal">
+
+    <div class="plan-card">
+      <div class="plan-name">تجريبي</div>
+      <div class="plan-price">مجاني <sub>/ شهرين</sub></div>
+      <div class="plan-desc">جرّب بابل بالكامل بدون أي تكلفة</div>
+      <ul class="plan-feats">
+        <li>حتى 50 منتج</li>
+        <li>إشعارات واتساب</li>
+        <li>لوحة تحكم كاملة</li>
+        <li>دعم فني</li>
+      </ul>
+      <a href="register.html?plan=trial" class="bbl-btn-ghost" style="width:100%;display:block;text-align:center;padding:.7rem;border-radius:.6rem;">ابدأ مجاناً</a>
+    </div>
+
+    <div class="plan-card featured">
+      <div class="plan-badge">الأكثر طلباً</div>
+      <div class="plan-name">أساسي</div>
+      <div class="plan-price">$15 <sub>/ شهر</sub></div>
+      <div class="plan-desc">مثالي للمشاريع الصغيرة والمتوسطة</div>
+      <ul class="plan-feats">
+        <li>حتى 500 منتج</li>
+        <li>واتساب + تيليجرام</li>
+        <li>إدارة السائقين</li>
+        <li>تقارير متقدمة</li>
+        <li>نقاط المكافآت</li>
+      </ul>
+      <a href="register.html?plan=basic" class="bbl-btn-primary" style="width:100%;display:block;text-align:center;padding:.7rem;border-radius:.6rem;">اشترك الآن</a>
+    </div>
+
+    <div class="plan-card">
+      <div class="plan-name">احترافي</div>
+      <div class="plan-price">$35 <sub>/ شهر</sub></div>
+      <div class="plan-desc">للمتاجر الكبيرة وفرق العمل</div>
+      <ul class="plan-feats">
+        <li>منتجات غير محدودة</li>
+        <li>جميع قنوات الإشعار</li>
+        <li>إدارة مندوبين وفروع</li>
+        <li>تقارير وتحليلات</li>
+        <li>أولوية في الدعم</li>
+        <li>API مخصص</li>
+      </ul>
+      <a href="register.html?plan=pro" class="bbl-btn-ghost" style="width:100%;display:block;text-align:center;padding:.7rem;border-radius:.6rem;">اشترك الآن</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section>
+  <div class="cta-strip reveal">
+    <h2>جاهز لإطلاق مشروعك؟</h2>
+    <p>انضم لمئات الشركات التي تثق بمنصة بابل. ابدأ تجربتك المجانية اليوم.</p>
+    <a href="register.html" class="bbl-btn-primary" style="font-size:1rem;padding:.8rem 2rem;">ابدأ الآن — مجاناً</a>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer style="border-top:1px solid var(--border);padding:2rem 1rem;text-align:center;color:var(--muted);font-size:.82rem;">
+  <div style="max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+    <div>🏛️ <strong style="color:var(--fg);">منصة بابل</strong> — بناء المواقع والمتاجر</div>
+    <div style="display:flex;gap:1.5rem;">
+      <a href="#" style="color:var(--muted);text-decoration:none;">سياسة الخصوصية</a>
+      <a href="#" style="color:var(--muted);text-decoration:none;">الشروط والأحكام</a>
+      <a href="#" style="color:var(--muted);text-decoration:none;">تواصل معنا</a>
+    </div>
+  </div>
+  <div style="margin-top:1rem;">© 2024 منصة بابل — جميع الحقوق محفوظة</div>
+</footer>
+
+<script>
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => io.observe(el));
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+    });
+  });
+</script>
+</body>
+</html>

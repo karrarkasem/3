@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة التحكم — منصة بابل</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/babil.css" />
+  <style>
+    /* ── Theme variables (overridden via JS on load) ── */
+    :root {
+      --th: #8b5cf6;
+      --th2: #7c3aed;
+    }
+
+    /* Apply tenant theme */
+    .dash-sidebar { background: linear-gradient(180deg, #0f0a1e 0%, #1a0f2e 100%); }
+    .dash-nav-item.active, .dash-nav-item:hover { background: rgba(var(--th-rgb, 139,92,246),.15); color: var(--th); }
+    .kpi-value { color: var(--th); }
+
+    /* Table */
+    .bbl-table { width:100%; border-collapse:collapse; }
+    .bbl-table th { text-align:right; font-weight:700; font-size:.8rem; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); padding:.75rem 1rem; border-bottom:1px solid var(--border); }
+    .bbl-table td { padding:.85rem 1rem; border-bottom:1px solid var(--border); font-size:.9rem; vertical-align:middle; }
+    .bbl-table tr:last-child td { border-bottom:none; }
+    .bbl-table tbody tr:hover { background:rgba(255,255,255,.02); }
+
+    /* Status badge */
+    .badge { display:inline-flex; align-items:center; gap:.3rem; padding:.25rem .65rem; border-radius:2rem; font-size:.75rem; font-weight:700; }
+    .badge-green  { background:rgba(16,185,129,.15); color:#10b981; }
+    .badge-yellow { background:rgba(234,179,8,.15);  color:#eab308; }
+    .badge-red    { background:rgba(239,68,68,.15);  color:#ef4444; }
+    .badge-blue   { background:rgba(59,130,246,.15); color:#3b82f6; }
+
+    /* KPI skeleton */
+    .kpi-loading { animation:pulse 1.5s infinite; background:var(--surface); border-radius:.5rem; height:1.5rem; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    /* Sidebar mobile */
+    @media(max-width:768px) {
+      #sidebarToggle { display:block; }
+      .dash-sidebar { position:fixed; z-index:200; transform:translateX(260px); transition:transform .3s; }
+      .dash-sidebar.open { transform:translateX(0); }
+    }
+    #sidebarToggle { display:none; background:none; border:none; color:var(--fg); font-size:1.4rem; cursor:pointer; }
+  </style>
+</head>
+<body>
+
+<div class="dash-wrap">
+
+  <!-- ── Sidebar ── -->
+  <aside class="dash-sidebar" id="sidebar">
+    <div class="dash-brand">
+      <div id="brandLogo" style="font-size:1.5rem;">🏛️</div>
+      <div>
+        <div id="brandName" style="font-weight:700;font-size:.95rem;">منصة بابل</div>
+        <div id="planBadge" style="font-size:.72rem;color:var(--muted);">...</div>
+      </div>
+    </div>
+
+    <nav id="sideNav">
+      <a class="dash-nav-item active" data-page="overview" onclick="showPage('overview', this)">
+        <span class="dash-nav-icon">📊</span> نظرة عامة
+      </a>
+      <a class="dash-nav-item" data-page="products" onclick="showPage('products', this)">
+        <span class="dash-nav-icon">📦</span> المنتجات
+      </a>
+      <a class="dash-nav-item" data-page="orders" onclick="showPage('orders', this)">
+        <span class="dash-nav-icon">🛒</span> الطلبات
+      </a>
+      <a class="dash-nav-item" data-page="drivers" onclick="showPage('drivers', this)">
+        <span class="dash-nav-icon">🚚</span> السائقون
+      </a>
+      <a class="dash-nav-item" data-page="customers" onclick="showPage('customers', this)">
+        <span class="dash-nav-icon">👥</span> العملاء
+      </a>
+      <a class="dash-nav-item" data-page="reps" onclick="showPage('reps', this)">
+        <span class="dash-nav-icon">🤝</span> المندوبون
+      </a>
+      <a class="dash-nav-item" data-page="wallet" onclick="showPage('wallet', this)">
+        <span class="dash-nav-icon">💰</span> المحفظة
+      </a>
+      <a class="dash-nav-item" data-page="settings" onclick="showPage('settings', this)">
+        <span class="dash-nav-icon">⚙️</span> الإعدادات
+      </a>
+    </nav>
+
+    <div style="margin-top:auto;padding:1rem;border-top:1px solid rgba(255,255,255,.07);">
+      <button onclick="doLogout()" style="width:100%;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#f87171;border-radius:.6rem;padding:.6rem;font-family:inherit;font-size:.85rem;cursor:pointer;font-weight:600;">
+        🚪 تسجيل الخروج
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <main class="dash-main">
+
+    <!-- Top bar -->
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <button id="sidebarToggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div id="pageTitle" style="font-weight:700;font-size:1.1rem;">نظرة عامة</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:1rem;">
+        <div id="trialBanner" style="display:none;font-size:.78rem;background:rgba(234,179,8,.15);border:1px solid rgba(234,179,8,.3);color:#eab308;padding:.3rem .8rem;border-radius:2rem;"></div>
+        <div id="adminName" style="font-size:.85rem;color:var(--muted);"></div>
+      </div>
+    </div>
+
+    <!-- ── OVERVIEW PAGE ── -->
+    <div id="page-overview" class="dash-page">
+      <div class="kpi-row" id="kpiRow">
+        <div class="kpi-card">
+          <div class="kpi-label">إجمالي الطلبات</div>
+          <div class="kpi-value" id="kpiOrders">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">الطلبات اليوم</div>
+          <div class="kpi-value" id="kpiToday">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">المنتجات</div>
+          <div class="kpi-value" id="kpiProducts">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">العملاء</div>
+          <div class="kpi-value" id="kpiCustomers">—</div>
+        </div>
+      </div>
+
+      <div class="bbl-card" style="margin-top:1.5rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+          <h3 style="font-size:1rem;font-weight:700;">آخر الطلبات</h3>
+          <a onclick="showPage('orders', document.querySelector('[data-page=orders]'))" style="font-size:.82rem;color:var(--accent);cursor:pointer;text-decoration:none;">عرض الكل</a>
+        </div>
+        <div id="recentOrders">
+          <div style="text-align:center;padding:2rem;color:var(--muted);font-size:.9rem;">جاري التحميل...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PRODUCTS PAGE ── -->
+    <div id="page-products" class="dash-page" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+        <h2 style="font-size:1.1rem;font-weight:700;">المنتجات</h2>
+        <button class="bbl-btn-primary" style="padding:.55rem 1.2rem;border-radius:.6rem;font-size:.88rem;" onclick="openAddProduct()">+ إضافة منتج</button>
+      </div>
+      <div class="bbl-card">
+        <div id="productsList">
+          <div style="text-align:center;padding:3rem;color:var(--muted);">جاري تحميل المنتجات...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ORDERS PAGE ── -->
+    <div id="page-orders" class="dash-page" style="display:none;">
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1.5rem;">الطلبات</h2>
+      <div class="bbl-card">
+        <div id="ordersList">
+          <div style="text-align:center;padding:3rem;color:var(--muted);">جاري تحميل الطلبات...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DRIVERS PAGE ── -->
+    <div id="page-drivers" class="dash-page" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+        <h2 style="font-size:1.1rem;font-weight:700;">السائقون</h2>
+        <button class="bbl-btn-primary" style="padding:.55rem 1.2rem;border-radius:.6rem;font-size:.88rem;" onclick="openAddDriver()">+ إضافة سائق</button>
+      </div>
+      <div class="bbl-card">
+        <div id="driversList">
+          <div style="text-align:center;padding:3rem;color:var(--muted);">جاري التحميل...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CUSTOMERS PAGE ── -->
+    <div id="page-customers" class="dash-page" style="display:none;">
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1.5rem;">العملاء</h2>
+      <div class="bbl-card">
+        <div id="customersList">
+          <div style="text-align:center;padding:3rem;color:var(--muted);">جاري التحميل...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── REPS PAGE ── -->
+    <div id="page-reps" class="dash-page" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+        <h2 style="font-size:1.1rem;font-weight:700;">المندوبون</h2>
+        <button class="bbl-btn-primary" style="padding:.55rem 1.2rem;border-radius:.6rem;font-size:.88rem;">+ إضافة مندوب</button>
+      </div>
+      <div class="bbl-card">
+        <div style="text-align:center;padding:3rem;color:var(--muted);">لا يوجد مندوبون حتى الآن</div>
+      </div>
+    </div>
+
+    <!-- ── WALLET PAGE ── -->
+    <div id="page-wallet" class="dash-page" style="display:none;">
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1.5rem;">المحفظة</h2>
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-label">الرصيد الحالي</div>
+          <div class="kpi-value" id="walletBalance">$0.00</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">إجمالي الإيرادات</div>
+          <div class="kpi-value" id="walletTotal">$0.00</div>
+        </div>
+      </div>
+      <div class="bbl-card" style="margin-top:1.5rem;">
+        <div style="text-align:center;padding:3rem;color:var(--muted);">لا توجد معاملات مالية حتى الآن</div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS PAGE ── -->
+    <div id="page-settings" class="dash-page" style="display:none;">
+      <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1.5rem;">إعدادات الموقع</h2>
+
+      <div class="bbl-card" style="margin-bottom:1.5rem;">
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:1.25rem;">معلومات الشركة</h3>
+        <div class="bbl-form-grid">
+          <div class="bbl-field">
+            <label>اسم الشركة (عربي)</label>
+            <input type="text" id="setNameAr" />
+          </div>
+          <div class="bbl-field">
+            <label>اسم الشركة (إنجليزي)</label>
+            <input type="text" id="setNameEn" />
+          </div>
+          <div class="bbl-field">
+            <label>رقم الهاتف</label>
+            <input type="tel" id="setPhone" />
+          </div>
+          <div class="bbl-field">
+            <label>البريد الإلكتروني</label>
+            <input type="email" id="setEmail" />
+          </div>
+          <div class="bbl-field" style="grid-column:1/-1">
+            <label>رابط الشعار</label>
+            <input type="url" id="setLogo" />
+          </div>
+        </div>
+        <button class="bbl-btn-primary" style="margin-top:1rem;padding:.65rem 1.5rem;border-radius:.6rem;" onclick="saveSettings()">حفظ التغييرات</button>
+      </div>
+
+      <div class="bbl-card">
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:1.25rem;">الاشتراك</h3>
+        <div id="subInfo" style="color:var(--muted);font-size:.9rem;">جاري التحميل...</div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Modal backdrop -->
+<div id="modalBack" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:300;backdrop-filter:blur(4px);" onclick="closeModal()"></div>
+
+<!-- Product modal -->
+<div id="productModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(94vw,560px);background:#1a1730;border:1px solid var(--border);border-radius:1.25rem;padding:2rem;z-index:400;max-height:90vh;overflow-y:auto;">
+  <h3 style="font-weight:700;margin-bottom:1.5rem;">إضافة منتج جديد</h3>
+  <div class="bbl-form-grid">
+    <div class="bbl-field">
+      <label>اسم المنتج <span style="color:#f87171">*</span></label>
+      <input type="text" id="prodName" placeholder="اسم المنتج" />
+    </div>
+    <div class="bbl-field">
+      <label>السعر <span style="color:#f87171">*</span></label>
+      <input type="number" id="prodPrice" placeholder="0.00" min="0" />
+    </div>
+    <div class="bbl-field" style="grid-column:1/-1">
+      <label>الوصف</label>
+      <textarea id="prodDesc" rows="3" placeholder="وصف المنتج..." style="width:100%;resize:vertical;"></textarea>
+    </div>
+    <div class="bbl-field">
+      <label>الكمية في المخزن</label>
+      <input type="number" id="prodStock" placeholder="0" min="0" />
+    </div>
+    <div class="bbl-field">
+      <label>رابط الصورة</label>
+      <input type="url" id="prodImg" placeholder="https://..." />
+    </div>
+  </div>
+  <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+    <button class="bbl-btn-ghost" style="flex:1;padding:.7rem;border-radius:.6rem;" onclick="closeModal()">إلغاء</button>
+    <button class="bbl-btn-primary" style="flex:2;padding:.7rem;border-radius:.6rem;" onclick="saveProduct()">حفظ المنتج</button>
+  </div>
+</div>
+
+<!-- Driver modal -->
+<div id="driverModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(94vw,480px);background:#1a1730;border:1px solid var(--border);border-radius:1.25rem;padding:2rem;z-index:400;">
+  <h3 style="font-weight:700;margin-bottom:1.5rem;">إضافة سائق</h3>
+  <div class="bbl-field"><label>الاسم <span style="color:#f87171">*</span></label><input type="text" id="drvName" placeholder="اسم السائق" /></div>
+  <div class="bbl-field"><label>رقم الهاتف <span style="color:#f87171">*</span></label><input type="tel" id="drvPhone" placeholder="+964..." /></div>
+  <div class="bbl-field"><label>اسم المستخدم <span style="color:#f87171">*</span></label><input type="text" id="drvUser" placeholder="driver1" /></div>
+  <div class="bbl-field"><label>كلمة المرور <span style="color:#f87171">*</span></label><input type="password" id="drvPass" /></div>
+  <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+    <button class="bbl-btn-ghost" style="flex:1;padding:.7rem;border-radius:.6rem;" onclick="closeModal()">إلغاء</button>
+    <button class="bbl-btn-primary" style="flex:2;padding:.7rem;border-radius:.6rem;" onclick="saveDriver()">حفظ السائق</button>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script type="module">
+  import './js/firebase.js';
+  import './js/auth.js';
+
+  // Auth guard
+  window.requireAuth();
+  const sess = window.getSession();
+
+  let tenantId   = sess.tenantId;
+  let tenantData = null;
+
+  // UI init
+  document.getElementById('adminName').textContent = sess.username || '';
+
+  // ── Load tenant data ──
+  async function loadTenant() {
+    await window.waitForFb();
+    const db = window._db;
+    const { doc, getDoc } = window._fb;
+
+    const snap = await getDoc(doc(db, 'tenants', tenantId));
+    if (!snap.exists()) { window.clearSession(); location.replace('login.html'); return; }
+
+    tenantData = snap.data();
+    document.getElementById('brandName').textContent = tenantData.nameAr || 'بابل';
+    if (tenantData.logoUrl) {
+      document.getElementById('brandLogo').innerHTML = `<img src="${tenantData.logoUrl}" style="width:36px;height:36px;border-radius:.5rem;object-fit:cover;">`;
+    }
+
+    // Subscription
+    const subSnap = await getDoc(doc(db, 'subscriptions', tenantId));
+    if (subSnap.exists()) {
+      const sub = subSnap.data();
+      const planNames = { trial:'تجريبي', basic:'أساسي', pro:'احترافي' };
+      document.getElementById('planBadge').textContent = planNames[sub.plan] || sub.plan;
+      if (sub.plan === 'trial' && sub.trialEnd) {
+        const end = sub.trialEnd.toDate();
+        const days = Math.ceil((end - new Date()) / 86400000);
+        if (days > 0) {
+          const el = document.getElementById('trialBanner');
+          el.textContent = `⚠️ متبقي ${days} يوم من التجربة المجانية`;
+          el.style.display = 'block';
+        }
+      }
+      // Fill settings sub info
+      document.getElementById('subInfo').innerHTML = `
+        <div>الخطة: <strong>${planNames[sub.plan] || sub.plan}</strong></div>
+        ${sub.trialEnd ? `<div style="margin-top:.5rem;">تنتهي التجربة: <strong>${sub.trialEnd.toDate().toLocaleDateString('ar-IQ')}</strong></div>` : ''}
+        <div style="margin-top:1rem;"><a href="index.html#pricing" style="color:var(--accent);text-decoration:none;font-size:.88rem;">ترقية الاشتراك ↗</a></div>
+      `;
+    }
+
+    // Fill settings form
+    document.getElementById('setNameAr').value = tenantData.nameAr  || '';
+    document.getElementById('setNameEn').value = tenantData.nameEn  || '';
+    document.getElementById('setPhone').value  = tenantData.phone   || '';
+    document.getElementById('setEmail').value  = tenantData.email   || '';
+    document.getElementById('setLogo').value   = tenantData.logoUrl || '';
+
+    loadKPIs();
+    loadRecentOrders();
+  }
+
+  // ── KPIs ──
+  async function loadKPIs() {
+    const db = window._db;
+    const { collection, query, where, getDocs } = window._fb;
+    const base = collection(db, `tenants/${tenantId}/orders`);
+    const prodBase = collection(db, `tenants/${tenantId}/products`);
+    const custBase = collection(db, `tenants/${tenantId}/customers`);
+
+    const [ordSnap, prodSnap, custSnap] = await Promise.all([
+      getDocs(base), getDocs(prodBase), getDocs(custBase)
+    ]);
+
+    const today = new Date(); today.setHours(0,0,0,0);
+    let todayCount = 0;
+    ordSnap.docs.forEach(d => {
+      const t = d.data().createdAt?.toDate?.();
+      if (t && t >= today) todayCount++;
+    });
+
+    document.getElementById('kpiOrders').textContent   = ordSnap.size;
+    document.getElementById('kpiToday').textContent    = todayCount;
+    document.getElementById('kpiProducts').textContent = prodSnap.size;
+    document.getElementById('kpiCustomers').textContent = custSnap.size;
+  }
+
+  // ── Recent orders ──
+  async function loadRecentOrders() {
+    const db = window._db;
+    const { collection, query, orderBy, getDocs } = window._fb;
+    const q = query(collection(db, `tenants/${tenantId}/orders`), orderBy('createdAt','desc'));
+    const snap = await getDocs(q);
+    const el = document.getElementById('recentOrders');
+
+    if (snap.empty) {
+      el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);">لا توجد طلبات حتى الآن</div>';
+      return;
+    }
+
+    const statusMap = { pending:'badge-yellow', processing:'badge-blue', delivered:'badge-green', cancelled:'badge-red' };
+    const statusAr  = { pending:'معلق', processing:'قيد التجهيز', delivered:'تم التوصيل', cancelled:'ملغي' };
+
+    const rows = snap.docs.slice(0, 8).map(d => {
+      const o = d.data();
+      const status = o.status || 'pending';
+      return `<tr>
+        <td>${o.orderNum || d.id.slice(0,6)}</td>
+        <td>${o.customerName || '—'}</td>
+        <td>${o.total ? '$'+Number(o.total).toFixed(2) : '—'}</td>
+        <td><span class="badge ${statusMap[status]||'badge-yellow'}">${statusAr[status]||status}</span></td>
+        <td style="font-size:.78rem;color:var(--muted);">${o.createdAt?.toDate?.()?.toLocaleDateString('ar-IQ') || '—'}</td>
+      </tr>`;
+    }).join('');
+
+    el.innerHTML = `<table class="bbl-table">
+      <thead><tr><th>رقم الطلب</th><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>التاريخ</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }
+
+  // ── Products page ──
+  async function loadProducts() {
+    const db = window._db;
+    const { collection, getDocs } = window._fb;
+    const snap = await getDocs(collection(db, `tenants/${tenantId}/products`));
+    const el = document.getElementById('productsList');
+
+    if (snap.empty) {
+      el.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted);">لا توجد منتجات. أضف أول منتج!</div>';
+      return;
+    }
+
+    const rows = snap.docs.map(d => {
+      const p = d.data();
+      return `<tr>
+        <td>${p.img ? `<img src="${p.img}" style="width:40px;height:40px;border-radius:.4rem;object-fit:cover;">` : '📦'}</td>
+        <td>${p.name || '—'}</td>
+        <td>$${Number(p.price||0).toFixed(2)}</td>
+        <td>${p.stock ?? '—'}</td>
+        <td><span class="badge ${(p.stock>0)?'badge-green':'badge-red'}">${(p.stock>0)?'متوفر':'نفد'}</span></td>
+      </tr>`;
+    }).join('');
+
+    el.innerHTML = `<table class="bbl-table">
+      <thead><tr><th></th><th>الاسم</th><th>السعر</th><th>المخزن</th><th>الحالة</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }
+
+  // ── Drivers page ──
+  async function loadDrivers() {
+    const db = window._db;
+    const { collection, getDocs } = window._fb;
+    const snap = await getDocs(collection(db, `tenants/${tenantId}/drivers`));
+    const el = document.getElementById('driversList');
+
+    if (snap.empty) {
+      el.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted);">لا يوجد سائقون. أضف أول سائق!</div>';
+      return;
+    }
+
+    const rows = snap.docs.map(d => {
+      const dr = d.data();
+      return `<tr>
+        <td>${dr.name || '—'}</td>
+        <td>${dr.phone || '—'}</td>
+        <td>${dr.username || '—'}</td>
+        <td><span class="badge badge-green">نشط</span></td>
+      </tr>`;
+    }).join('');
+
+    el.innerHTML = `<table class="bbl-table">
+      <thead><tr><th>الاسم</th><th>الهاتف</th><th>المستخدم</th><th>الحالة</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }
+
+  // ── Customers ──
+  async function loadCustomers() {
+    const db = window._db;
+    const { collection, getDocs } = window._fb;
+    const snap = await getDocs(collection(db, `tenants/${tenantId}/customers`));
+    const el = document.getElementById('customersList');
+
+    if (snap.empty) {
+      el.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--muted);">لا يوجد عملاء حتى الآن</div>';
+      return;
+    }
+
+    const rows = snap.docs.map(d => {
+      const c = d.data();
+      return `<tr>
+        <td>${c.name || '—'}</td>
+        <td>${c.phone || '—'}</td>
+        <td>${c.totalOrders || 0}</td>
+        <td>${c.points || 0} نقطة</td>
+      </tr>`;
+    }).join('');
+
+    el.innerHTML = `<table class="bbl-table">
+      <thead><tr><th>الاسم</th><th>الهاتف</th><th>الطلبات</th><th>النقاط</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }
+
+  // ── Save product ──
+  window.saveProduct = async function() {
+    const name  = document.getElementById('prodName').value.trim();
+    const price = document.getElementById('prodPrice').value;
+    if (!name || !price) { toast('يرجى ملء الاسم والسعر', 'error'); return; }
+
+    const db = window._db;
+    const { collection, addDoc, serverTimestamp } = window._fb;
+    await addDoc(collection(db, `tenants/${tenantId}/products`), {
+      name, price: +price,
+      description: document.getElementById('prodDesc').value.trim(),
+      stock: +document.getElementById('prodStock').value || 0,
+      img:   document.getElementById('prodImg').value.trim(),
+      createdAt: serverTimestamp()
+    });
+
+    toast('تم حفظ المنتج بنجاح', 'success');
+    closeModal();
+    loadProducts();
+  };
+
+  // ── Save driver ──
+  window.saveDriver = async function() {
+    const name  = document.getElementById('drvName').value.trim();
+    const phone = document.getElementById('drvPhone').value.trim();
+    const user  = document.getElementById('drvUser').value.trim();
+    const pass  = document.getElementById('drvPass').value;
+    if (!name || !phone || !user || !pass) { toast('يرجى ملء جميع الحقول', 'error'); return; }
+
+    const db = window._db;
+    const { collection, addDoc, serverTimestamp } = window._fb;
+    const hashed = await window.hashPassword(pass);
+    await addDoc(collection(db, `tenants/${tenantId}/drivers`), {
+      name, phone, username: user, passwordHash: hashed, createdAt: serverTimestamp()
+    });
+
+    toast('تم إضافة السائق بنجاح', 'success');
+    closeModal();
+    loadDrivers();
+  };
+
+  // ── Save settings ──
+  window.saveSettings = async function() {
+    const db = window._db;
+    const { doc, updateDoc } = window._fb;
+    await updateDoc(doc(db, 'tenants', tenantId), {
+      nameAr:  document.getElementById('setNameAr').value.trim(),
+      nameEn:  document.getElementById('setNameEn').value.trim(),
+      phone:   document.getElementById('setPhone').value.trim(),
+      email:   document.getElementById('setEmail').value.trim(),
+      logoUrl: document.getElementById('setLogo').value.trim()
+    });
+    toast('تم حفظ الإعدادات', 'success');
+    loadTenant();
+  };
+
+  // ── Page switching ──
+  window.showPage = function(page, el) {
+    document.querySelectorAll('.dash-page').forEach(p => p.style.display = 'none');
+    document.getElementById(`page-${page}`).style.display = 'block';
+    document.querySelectorAll('.dash-nav-item').forEach(a => a.classList.remove('active'));
+    if (el) el.classList.add('active');
+
+    const titles = { overview:'نظرة عامة', products:'المنتجات', orders:'الطلبات', drivers:'السائقون', customers:'العملاء', reps:'المندوبون', wallet:'المحفظة', settings:'الإعدادات' };
+    document.getElementById('pageTitle').textContent = titles[page] || page;
+
+    if (page === 'products')  loadProducts();
+    if (page === 'drivers')   loadDrivers();
+    if (page === 'customers') loadCustomers();
+
+    // Close sidebar on mobile
+    document.getElementById('sidebar').classList.remove('open');
+  };
+
+  // ── Modals ──
+  window.openAddProduct = function() {
+    document.getElementById('productModal').style.display = 'block';
+    document.getElementById('modalBack').style.display    = 'block';
+  };
+  window.openAddDriver = function() {
+    document.getElementById('driverModal').style.display = 'block';
+    document.getElementById('modalBack').style.display   = 'block';
+  };
+  window.closeModal = function() {
+    document.querySelectorAll('#productModal,#driverModal').forEach(m => m.style.display = 'none');
+    document.getElementById('modalBack').style.display = 'none';
+  };
+
+  // ── Logout ──
+  window.doLogout = async function() {
+    window.clearSession(); // يمسح localStorage + يستدعي Firebase signOut
+    location.replace('login.html');
+  };
+
+  // ── Toast ──
+  function toast(msg, type = 'info') {
+    const stack = document.getElementById('toastStack');
+    const t = document.createElement('div');
+    t.className = `bbl-toast ${type}`;
+    t.textContent = msg;
+    stack.appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+  }
+
+  // ── Init ──
+  loadTenant();
+</script>
+</body>
+</html>
