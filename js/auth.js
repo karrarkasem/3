@@ -79,6 +79,15 @@ async function resetPassword(email) {
   return sendPasswordResetEmail(window._auth, email);
 }
 
+// ── تشفير كلمة المرور (SHA-256) ──
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 window.saveSession       = saveSession;
 window.getSession        = getSession;
 window.clearSession      = clearSession;
@@ -88,3 +97,4 @@ window.waitForFb         = waitForFb;
 window.registerWithEmail = registerWithEmail;
 window.loginWithEmail    = loginWithEmail;
 window.resetPassword     = resetPassword;
+window.hashPassword      = hashPassword;
