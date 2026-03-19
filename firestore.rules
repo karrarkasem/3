@@ -58,9 +58,12 @@ service cloud.firestore {
     // ── الاشتراكات ──
     match /subscriptions/{tenantId} {
       // المستأجر يقرأ اشتراكه فقط
-      allow read:  if request.auth != null && request.auth.uid == tenantId;
-      // لا يعدّل الاشتراك بنفسه — يُعدّل فقط من Firebase Console أو Functions
-      allow write: if false;
+      allow read:   if request.auth != null && request.auth.uid == tenantId;
+      // إنشاء الاشتراك عند التسجيل — المستخدم يكتب بياناته الخاصة فقط
+      allow create: if request.auth != null && request.auth.uid == tenantId;
+      // التعديل من Firebase Console فقط
+      allow update: if false;
+      allow delete: if false;
     }
 
     // ── رفض أي شيء آخر ──
