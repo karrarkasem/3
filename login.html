@@ -3,207 +3,254 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>تسجيل الدخول — منصة بابل</title>
+  <title>منصة بابل — ابنِ متجرك الآن</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/babil.css" />
+  <style>
+    /* Reveal animation */
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity .6s ease, transform .6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+  </style>
 </head>
 <body>
 
+<!-- ── Navbar ── -->
 <nav class="bbl-nav">
   <div class="bbl-nav-inner">
     <a href="index.html" class="bbl-logo">🏛️ بابل</a>
     <div class="bbl-nav-links">
-      <span style="font-size:.85rem;color:var(--muted);">ليس لديك حساب؟</span>
-      <a href="register.html" class="bbl-btn bbl-btn-primary bbl-btn-sm">سجّل مجاناً</a>
+      <a href="#how"      class="bbl-nav-link">كيف يعمل</a>
+      <a href="#features" class="bbl-nav-link">المميزات</a>
+      <a href="#pricing"  class="bbl-nav-link">الأسعار</a>
+      <a href="login.html"    class="bbl-btn bbl-btn-ghost bbl-btn-sm">تسجيل الدخول</a>
+      <a href="register.html" class="bbl-btn bbl-btn-primary bbl-btn-sm">ابدأ مجاناً</a>
     </div>
   </div>
 </nav>
 
-<div class="auth-wrap">
-  <div class="auth-card">
-    <div style="text-align:center;margin-bottom:2rem;">
-      <div style="font-size:2.5rem;margin-bottom:.5rem;">🔐</div>
-      <h2 style="font-size:1.5rem;font-weight:900;margin-bottom:.25rem;">تسجيل الدخول</h2>
-      <p style="color:var(--muted);font-size:.88rem;">أدخل البريد الإلكتروني وكلمة المرور</p>
+<!-- ── Hero ── -->
+<div class="bbl-hero">
+  <div class="bbl-hero-inner">
+    <div class="bbl-hero-badge"><span>🚀</span> منصة بناء المواقع والمتاجر</div>
+    <h1 class="bbl-hero-title">ابنِ متجرك الإلكتروني<br />في دقائق</h1>
+    <p class="bbl-hero-sub">
+      بابل منصة سحابية تتيح لك إطلاق متجر أو موقع تجاري كامل بدون أي خبرة تقنية —
+      فقط اختر تخصصك واملأ معلوماتك وابدأ البيع فوراً.
+    </p>
+    <div class="bbl-hero-cta">
+      <a href="register.html" class="bbl-btn bbl-btn-primary bbl-btn-lg">ابدأ تجربتك المجانية</a>
+      <a href="login.html"    class="bbl-btn bbl-btn-ghost bbl-btn-lg">لدي حساب بالفعل</a>
     </div>
-
-    <!-- Login form -->
-    <div id="formLogin">
-      <form id="loginForm" novalidate>
-        <div class="bbl-field">
-          <label>البريد الإلكتروني</label>
-          <input type="email" id="loginEmail" placeholder="example@domain.com" autocomplete="email" />
-        </div>
-        <div class="bbl-field">
-          <label>كلمة المرور</label>
-          <div style="position:relative;">
-            <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" style="padding-left:2.5rem;" />
-            <button type="button" id="togglePwd" style="position:absolute;left:.75rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:0;">👁️</button>
-          </div>
-        </div>
-
-        <div style="text-align:left;margin-bottom:1rem;">
-          <a id="forgotLink" href="#" style="font-size:.82rem;color:var(--accent);text-decoration:none;">نسيت كلمة المرور؟</a>
-        </div>
-
-        <div id="loginError" style="display:none;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.35);border-radius:.6rem;padding:.75rem 1rem;font-size:.85rem;color:#f87171;margin-bottom:1rem;"></div>
-
-        <button type="submit" id="loginBtn" class="bbl-btn-primary" style="width:100%;padding:.8rem;font-size:1rem;border-radius:.7rem;">
-          <span id="loginBtnText">دخول</span>
-        </button>
-      </form>
-    </div>
-
-    <!-- Reset password form -->
-    <div id="formReset" style="display:none;">
-      <p style="color:var(--muted);font-size:.88rem;margin-bottom:1.5rem;">أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين</p>
-      <div class="bbl-field">
-        <label>البريد الإلكتروني</label>
-        <input type="email" id="resetEmail" placeholder="example@domain.com" />
+    <div class="bbl-hero-stats">
+      <div>
+        <div class="bbl-stat-val">+500</div>
+        <div class="bbl-stat-lbl">متجر نشط</div>
       </div>
-      <div id="resetMsg" style="display:none;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);border-radius:.6rem;padding:.75rem 1rem;font-size:.85rem;color:#10b981;margin-bottom:1rem;"></div>
-      <div id="resetErr" style="display:none;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.35);border-radius:.6rem;padding:.75rem 1rem;font-size:.85rem;color:#f87171;margin-bottom:1rem;"></div>
-      <div style="display:flex;gap:.75rem;">
-        <button class="bbl-btn-ghost" style="flex:1;padding:.7rem;border-radius:.6rem;" onclick="showLoginForm()">رجوع</button>
-        <button class="bbl-btn-primary" style="flex:2;padding:.7rem;border-radius:.6rem;" onclick="sendReset()">إرسال الرابط</button>
+      <div>
+        <div class="bbl-stat-val">60 يوم</div>
+        <div class="bbl-stat-lbl">تجربة مجانية</div>
       </div>
-    </div>
-
-    <div style="text-align:center;margin-top:1.5rem;font-size:.85rem;color:var(--muted);">
-      ليس لديك حساب؟ <a href="register.html" style="color:var(--accent);text-decoration:none;font-weight:600;">سجّل الآن مجاناً</a>
+      <div>
+        <div class="bbl-stat-val">24/7</div>
+        <div class="bbl-stat-lbl">دعم فني</div>
+      </div>
     </div>
   </div>
 </div>
 
-<div class="toast-stack" id="toastStack"></div>
+<!-- ── How it works ── -->
+<section id="how" class="bbl-section">
+  <div class="reveal">
+    <div class="bbl-sec-badge">كيف يعمل</div>
+    <div class="bbl-sec-title">أربع خطوات وموقعك جاهز</div>
+    <p class="bbl-sec-sub">لا تحتاج أي مهارة برمجية. بابل يهتم بكل التقنيات خلف الكواليس.</p>
+  </div>
+  <div class="bbl-steps-grid reveal">
+    <div class="bbl-step-card">
+      <div class="bbl-step-num">1</div>
+      <h3>اختر تخصصك</h3>
+      <p>متجر، مطعم، عيادة، محل ملابس، أو أي تخصص آخر</p>
+    </div>
+    <div class="bbl-step-card">
+      <div class="bbl-step-num">2</div>
+      <h3>أدخل معلوماتك</h3>
+      <p>اسم الشركة، الشعار، رقم الهاتف، وبقية التفاصيل</p>
+    </div>
+    <div class="bbl-step-card">
+      <div class="bbl-step-num">3</div>
+      <h3>اختر خطة الاشتراك</h3>
+      <p>ابدأ مجاناً لمدة شهرين ثم اختر الخطة التي تناسبك</p>
+    </div>
+    <div class="bbl-step-card">
+      <div class="bbl-step-num">4</div>
+      <h3>انشر وابدأ البيع</h3>
+      <p>موقعك جاهز فوراً مع لوحة تحكم كاملة وإشعارات فورية</p>
+    </div>
+  </div>
+</section>
 
-<script type="module">
-  import './js/firebase.js';
-  import './js/auth.js';
+<!-- ── Business types ── -->
+<section class="bbl-section bbl-section-alt">
+  <div class="reveal">
+    <div class="bbl-sec-badge">التخصصات</div>
+    <div class="bbl-sec-title">لكل نشاط تجاري حل مخصص</div>
+  </div>
+  <div class="bbl-biz-grid reveal">
+    <div class="bbl-biz-card"><div class="bbl-biz-icon">🛒</div><div class="bbl-biz-name">متجر إلكتروني</div></div>
+    <div class="bbl-biz-card"><div class="bbl-biz-icon">🍽️</div><div class="bbl-biz-name">مطعم وكافيه</div></div>
+    <div class="bbl-biz-card"><div class="bbl-biz-icon">👗</div><div class="bbl-biz-name">محل ملابس</div></div>
+    <div class="bbl-biz-card"><div class="bbl-biz-icon">💊</div><div class="bbl-biz-name">صيدلية</div></div>
+    <div class="bbl-biz-card"><div class="bbl-biz-icon">🏢</div><div class="bbl-biz-name">شركة خدمات</div></div>
+    <div class="bbl-biz-card"><div class="bbl-biz-icon">🏭</div><div class="bbl-biz-name">مستودع وتوزيع</div></div>
+    <div class="bbl-biz-card"><div class="bbl-biz-icon">🔧</div><div class="bbl-biz-name">خدمات تقنية</div></div>
+    <div class="bbl-biz-card"><div class="bbl-biz-icon">✨</div><div class="bbl-biz-name">أخرى</div></div>
+  </div>
+</section>
 
-  window.redirectIfAuth();
+<!-- ── Features ── -->
+<section id="features" class="bbl-section">
+  <div class="reveal">
+    <div class="bbl-sec-badge">المميزات</div>
+    <div class="bbl-sec-title">كل ما تحتاجه في مكان واحد</div>
+  </div>
+  <div class="bbl-feat-grid reveal">
+    <div class="bbl-feat-card">
+      <div class="bbl-feat-icon">📦</div>
+      <div class="bbl-feat-title">إدارة المنتجات</div>
+      <p class="bbl-feat-desc">أضف منتجاتك بالصور والأسعار وتتبع المخزون بسهولة تامة</p>
+    </div>
+    <div class="bbl-feat-card">
+      <div class="bbl-feat-icon">🔔</div>
+      <div class="bbl-feat-title">إشعارات فورية</div>
+      <p class="bbl-feat-desc">استقبل طلباتك عبر واتساب أو تيليجرام أو البريد الإلكتروني</p>
+    </div>
+    <div class="bbl-feat-card">
+      <div class="bbl-feat-icon">🚚</div>
+      <div class="bbl-feat-title">إدارة التوصيل</div>
+      <p class="bbl-feat-desc">تتبع السائقين والطلبات في الوقت الحقيقي مع خريطة مباشرة</p>
+    </div>
+    <div class="bbl-feat-card">
+      <div class="bbl-feat-icon">🎨</div>
+      <div class="bbl-feat-title">تصميم مخصص</div>
+      <p class="bbl-feat-desc">اختر ألوان موقعك والوضع الفاتح أو الداكن بنقرة واحدة</p>
+    </div>
+    <div class="bbl-feat-card">
+      <div class="bbl-feat-icon">📊</div>
+      <div class="bbl-feat-title">تقارير وإحصائيات</div>
+      <p class="bbl-feat-desc">راقب مبيعاتك وأداء طلباتك من لوحة تحكم واضحة ومرتبة</p>
+    </div>
+    <div class="bbl-feat-card">
+      <div class="bbl-feat-icon">💳</div>
+      <div class="bbl-feat-title">نقاط المكافآت</div>
+      <p class="bbl-feat-desc">نظام نقاط مدمج لمكافأة عملائك وزيادة ولائهم</p>
+    </div>
+    <div class="bbl-feat-card">
+      <div class="bbl-feat-icon">👥</div>
+      <div class="bbl-feat-title">إدارة المندوبين</div>
+      <p class="bbl-feat-desc">أضف مندوبين وتابع أداءهم وعمولاتهم بشكل آلي</p>
+    </div>
+    <div class="bbl-feat-card">
+      <div class="bbl-feat-icon">🔐</div>
+      <div class="bbl-feat-title">أمان عالي</div>
+      <p class="bbl-feat-desc">بياناتك محمية بتشفير من الدرجة الأولى على Firebase</p>
+    </div>
+  </div>
+</section>
 
-  const loginForm  = document.getElementById('loginForm');
-  const emailI     = document.getElementById('loginEmail');
-  const passwordI  = document.getElementById('loginPassword');
-  const loginBtn   = document.getElementById('loginBtn');
-  const loginErr   = document.getElementById('loginError');
-  const togglePwd  = document.getElementById('togglePwd');
+<!-- ── Pricing ── -->
+<section id="pricing" class="bbl-section bbl-section-alt">
+  <div class="reveal text-center">
+    <div class="bbl-sec-badge">الأسعار</div>
+    <div class="bbl-sec-title">خطط بسيطة وشفافة</div>
+    <p class="bbl-sec-sub">ابدأ مجاناً، وطوّر اشتراكك متى تريد. لا رسوم خفية.</p>
+  </div>
+  <div class="bbl-plans-grid reveal">
 
-  togglePwd.addEventListener('click', () => {
-    const isPass = passwordI.type === 'password';
-    passwordI.type = isPass ? 'text' : 'password';
-    togglePwd.textContent = isPass ? '🙈' : '👁️';
-  });
+    <div class="bbl-plan-card">
+      <div class="bbl-trial-tag">🎁 تجريبي</div>
+      <div class="bbl-plan-name">تجريبي</div>
+      <div class="bbl-plan-price">مجاني</div>
+      <div class="bbl-plan-period">شهرين كاملين</div>
+      <div class="bbl-plan-feats">
+        <div class="bbl-plan-feat"><span class="ck">✓</span> حتى 50 منتج</div>
+        <div class="bbl-plan-feat"><span class="ck">✓</span> إشعارات واتساب</div>
+        <div class="bbl-plan-feat"><span class="ck">✓</span> لوحة تحكم كاملة</div>
+        <div class="bbl-plan-feat"><span class="ck">✓</span> دعم فني</div>
+      </div>
+      <a href="register.html?plan=trial" class="bbl-btn bbl-btn-outline" style="width:100%;display:flex;justify-content:center;">ابدأ مجاناً</a>
+    </div>
 
-  document.getElementById('forgotLink').addEventListener('click', e => {
-    e.preventDefault();
-    document.getElementById('formLogin').style.display = 'none';
-    document.getElementById('formReset').style.display = 'block';
-    document.getElementById('resetEmail').value = emailI.value;
-  });
+    <div class="bbl-plan-card popular">
+      <div class="bbl-pop-badge">الأكثر طلباً</div>
+      <div class="bbl-plan-name">أساسي</div>
+      <div class="bbl-plan-price">$15 <span>/ شهر</span></div>
+      <div class="bbl-plan-period">مثالي للمشاريع الصغيرة والمتوسطة</div>
+      <div class="bbl-plan-feats">
+        <div class="bbl-plan-feat"><span class="ck">✓</span> حتى 500 منتج</div>
+        <div class="bbl-plan-feat"><span class="ck">✓</span> واتساب + تيليجرام</div>
+        <div class="bbl-plan-feat"><span class="ck">✓</span> إدارة السائقين</div>
+        <div class="bbl-plan-feat"><span class="ck">✓</span> تقارير متقدمة</div>
+        <div class="bbl-plan-feat"><span class="ck">✓</span> نقاط المكافآت</div>
+      </div>
+      <a href="register.html?plan=basic" class="bbl-btn bbl-btn-primary" style="width:100%;display:flex;justify-content:center;">اشترك الآن</a>
+    </div>
 
-  window.showLoginForm = function() {
-    document.getElementById('formReset').style.display = 'none';
-    document.getElementById('formLogin').style.display = 'block';
-  };
+    <div class="bbl-plan-card">
+      <div class="bbl-plan-name">احترافي</div>
+      <div class="bbl-plan-price">$35 <span>/ شهر</span></div>
+      <div class="bbl-plan-period">للمتاجر الكبيرة وفرق العمل</div>
+      <div class="bbl-plan-feats">
+        <div class="bbl-plan-feat"><span class="ck">✓</span> منتجات غير محدودة</div>
+        <div class="bbl-plan-feat"><span class="ck">✓</span> جميع قنوات الإشعار</div>
+        <div class="bbl-plan-feat"><span class="ck">✓</span> إدارة مندوبين وفروع</div>
+        <div class="bbl-plan-feat"><span class="ck">✓</span> تقارير وتحليلات</div>
+        <div class="bbl-plan-feat"><span class="ck">✓</span> أولوية في الدعم</div>
+        <div class="bbl-plan-feat"><span class="ck">✓</span> API مخصص</div>
+      </div>
+      <a href="register.html?plan=pro" class="bbl-btn bbl-btn-outline" style="width:100%;display:flex;justify-content:center;">اشترك الآن</a>
+    </div>
 
-  window.sendReset = async function() {
-    const email = document.getElementById('resetEmail').value.trim();
-    const msgEl = document.getElementById('resetMsg');
-    const errEl = document.getElementById('resetErr');
-    msgEl.style.display = 'none';
-    errEl.style.display = 'none';
+  </div>
+</section>
 
-    if (!email) { errEl.textContent = 'يرجى إدخال البريد الإلكتروني'; errEl.style.display = 'block'; return; }
+<!-- ── CTA ── -->
+<div class="bbl-section">
+<div class="bbl-cta reveal">
+  <h2>جاهز لإطلاق مشروعك؟</h2>
+  <p>انضم لمئات الشركات التي تثق بمنصة بابل. ابدأ تجربتك المجانية اليوم.</p>
+  <div class="bbl-cta-btns">
+    <a href="register.html" class="bbl-btn-cta-white">ابدأ الآن — مجاناً</a>
+    <a href="#how" class="bbl-btn-cta-border">تعرّف على بابل</a>
+  </div>
+</div>
+</div>
 
-    try {
-      await window.resetPassword(email);
-      msgEl.textContent = 'تم إرسال رابط إعادة التعيين. تحقق من بريدك الإلكتروني.';
-      msgEl.style.display = 'block';
-    } catch (err) {
-      errEl.textContent = 'البريد غير موجود أو حدث خطأ.';
-      errEl.style.display = 'block';
-    }
-  };
+<!-- ── Footer ── -->
+<footer class="bbl-footer">
+  <div>🏛️ <strong style="color:var(--text);">منصة بابل</strong> — بناء المواقع والمتاجر</div>
+  <div class="bbl-footer-links">
+    <a href="#" class="bbl-footer-link">سياسة الخصوصية</a>
+    <a href="#" class="bbl-footer-link">الشروط والأحكام</a>
+    <a href="#" class="bbl-footer-link">تواصل معنا</a>
+  </div>
+  <div style="width:100%;text-align:center;margin-top:.5rem;font-size:.78rem;color:var(--muted2);">© 2025 منصة بابل — جميع الحقوق محفوظة</div>
+</footer>
 
-  function showError(msg) { loginErr.textContent = msg; loginErr.style.display = 'block'; }
-  function hideError()    { loginErr.style.display = 'none'; }
-  function setLoading(on) {
-    loginBtn.disabled = on;
-    document.getElementById('loginBtnText').textContent = on ? 'جارٍ التحقق...' : 'دخول';
-  }
+<script>
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => io.observe(el));
 
-  loginForm.addEventListener('submit', async e => {
-    e.preventDefault();
-    hideError();
-
-    const email    = emailI.value.trim();
-    const password = passwordI.value;
-
-    if (!email || !password) { showError('يرجى إدخال البريد الإلكتروني وكلمة المرور'); return; }
-
-    setLoading(true);
-
-    try {
-      // Firebase Authentication
-      const cred = await window.loginWithEmail(email, password);
-      const uid  = cred.user.uid;
-
-      // Load tenant data
-      await window.waitForFb();
-      const db = window._db;
-      const { doc, getDoc } = window._fb;
-
-      const tenantSnap = await getDoc(doc(db, 'tenants', uid));
-      if (!tenantSnap.exists()) {
-        showError('لم يتم العثور على بيانات الحساب.');
-        await window._fbAuth.signOut(window._auth);
-        setLoading(false);
-        return;
-      }
-
-      const tenantData = tenantSnap.data();
-
-      // Check subscription not cancelled
-      const subSnap = await getDoc(doc(db, 'subscriptions', uid));
-      if (subSnap.exists() && subSnap.data().status === 'cancelled') {
-        showError('الاشتراك منتهي. يرجى تجديد اشتراكك.');
-        await window._fbAuth.signOut(window._auth);
-        setLoading(false);
-        return;
-      }
-
-      // Check trial expiry
-      if (subSnap.exists()) {
-        const sub = subSnap.data();
-        if (sub.plan === 'trial' && sub.trialEnd) {
-          const trialEndDate = sub.trialEnd.toDate();
-          if (new Date() > trialEndDate) {
-            showError('انتهت فترة التجربة المجانية. يرجى الترقية إلى خطة مدفوعة.');
-            await window._fbAuth.signOut(window._auth);
-            setLoading(false);
-            return;
-          }
-        }
-      }
-
-      window.saveSession(uid, tenantData);
-      location.replace('dashboard.html');
-
-    } catch (err) {
-      console.error(err);
-      const code = err.code;
-      if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
-        showError('البريد الإلكتروني أو كلمة المرور غير صحيحة');
-      } else if (code === 'auth/too-many-requests') {
-        showError('تم تجاوز عدد المحاولات. حاول لاحقاً.');
-      } else {
-        showError('حدث خطأ أثناء تسجيل الدخول. حاول مرة أخرى.');
-      }
-      setLoading(false);
-    }
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+    });
   });
 </script>
 </body>
